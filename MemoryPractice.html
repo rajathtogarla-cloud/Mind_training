@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Tough Number Combination Sets (Static)</title>
+  <title>Cloud Memory Practice (Dynamic)</title>
   <style>
     body { 
       font-family: Arial, sans-serif; 
@@ -13,245 +13,392 @@
     h1 { 
       text-align: center; 
       color: #1e3a8a; 
+      margin-bottom: 5px;
+    }
+    .status-bar {
+      text-align: center;
+      font-size: 0.85em;
+      color: #6b7280;
       margin-bottom: 20px;
+      height: 20px;
     }
     h2 { 
       color: #2563eb; 
       margin-bottom: 8px; 
+      display: flex;
+      align-items: center;
+      gap: 10px;
     }
+    
+    /* --- Controls --- */
     .controls { 
-      text-align: center; 
-      margin: 15px 0; 
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 10px;
+      align-items: center;
+      margin: 15px auto; 
+      padding: 15px;
+      background: #f8fafc;
+      border-radius: 8px;
+      max-width: 800px;
     }
-    .controls button { 
-      margin: 5px; 
+    .control-group {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      background: #e2e8f0;
+      padding: 5px 10px;
+      border-radius: 6px;
+    }
+    input[type="number"] {
+      border: 1px solid #cbd5e1;
+      padding: 5px;
+      border-radius: 4px;
+      width: 50px;
+      text-align: center;
+      font-weight: bold;
+    }
+    button { 
       padding: 8px 14px; 
       border: none;
       border-radius: 6px;
       cursor: pointer;
       font-weight: bold;
       color: white;
-      transition: background 0.2s;
+      transition: opacity 0.2s;
     }
-    .controls button:nth-child(2) { background: #dc2626; } /* Reset All - red */
-    .controls button:nth-child(3) { background: #2563eb; } /* Copy All - blue */
-    .controls button:nth-child(4) { background: #16a34a; } /* Download - green */
-    .controls button:nth-child(5) { background: #6b7280; } /* Print - gray */
-    .controls button:hover { opacity: 0.85; }
+    button:hover { opacity: 0.85; }
+    
+    #btn-reset { background: #dc2626; } /* Red */
+    #btn-copy { background: #2563eb; } /* Blue */
+    #btn-download { background: #16a34a; } /* Green */
+    #btn-regen { background: #b91c1c; border: 1px solid #991b1b; } /* Dark Red */
+    .btn-secondary { background: #64748b; font-size: 0.9em; }
 
     ul { list-style: none; padding: 0; }
+    
+    /* --- UPDATED LIST ITEM STYLING --- */
     li { 
       display: inline-block; 
-      margin: 4px; 
-      padding: 6px 12px; 
+      margin: 5px; 
+      padding: 8px 14px; /* Slightly larger padding */
       border: 1px solid #cbd5e1; 
       border-radius: 6px; 
       cursor: pointer;
       background: #ffffff;
-      transition: background 0.2s, color 0.2s;
+      transition: all 0.1s;
+      user-select: none;
+      
+      /* Font & Texture Updates */
+      font-family: Arial, sans-serif; /* Clean standard font */
+      font-size: 18px;                /* Consistent large size */
+      font-weight: 500;               /* Solid visual weight */
+      letter-spacing: 0.5px;          /* Better readability */
+      color: #334155;                 /* Dark grey for good contrast */
     }
-    li:hover {
-      background: #e2e8f0;
+    li:hover { 
+      background: #e2e8f0; 
+      border-color: #94a3b8;
     }
+    li:active { transform: scale(0.95); }
+    
     .completed { 
       background: #bbf7d0 !important; 
-      color: #065f46; 
+      color: #065f46 !important; 
       font-weight: bold;
+      border-color: #86efac;
     }
 
     .set { 
       margin-top: 25px; 
-      padding: 12px; 
+      padding: 15px; 
       background: #f1f5f9; 
       border-radius: 8px; 
-      box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+      border: 1px solid #e2e8f0;
     }
     .counter { 
-      font-weight: bold; 
+      font-size: 0.9em;
+      font-weight: normal; 
       color: #16a34a;
+      background: #fff;
+      padding: 2px 8px;
+      border-radius: 12px;
+      border: 1px solid #cbd5e1;
     }
-    .set button { 
-      background: none; 
+    .btn-set-reset { 
+      background: white; 
       border: 1px solid #9ca3af; 
       border-radius: 4px; 
-      padding: 2px 8px; 
-      cursor: pointer;
-      font-size: 0.85em;
+      padding: 4px 8px; 
       color: #374151;
-      transition: all 0.2s;
+      font-size: 0.75em;
+      margin-left: auto;
     }
-    .set button:hover {
-      background: #e5e7eb;
+    .btn-set-reset:hover {
+      background: #fee2e2;
+      color: #991b1b;
+      opacity: 1;
     }
+
     @media print {
-      .controls { display: none; }
-      button { display: none; }
+      .controls, .btn-set-reset, .status-bar { display: none; }
       body { background: white; }
+      .set { border: 1px solid #ddd; page-break-inside: avoid; }
     }
   </style>
 </head>
 <body>
 
-<h1>Tough Number Combination Sets (Static)</h1>
+<h1>Memory Practice (Cloud + Regen)</h1>
+<div class="status-bar" id="statusIndicator">Connecting to cloud...</div>
+
 <div class="controls">
-  <div id="globalCounter">Completed: 0 / 964</div>
-  <button onclick="resetAll()">Reset All</button>
-  <button onclick="copyAll()">Copy All</button>
-  <button onclick="downloadTxt()">Download .txt</button>
-  <button onclick="window.print()">Print</button>
+  <div style="width: 100%; text-align: center; margin-bottom: 10px; color: #1e3a8a; font-weight: bold;" id="globalCounter">
+    Loading...
+  </div>
+  
+  <button id="btn-reset">Reset Progress</button>
+  <button id="btn-copy" class="btn-secondary">Copy Data</button>
+  <button id="btn-download" class="btn-secondary">Download</button>
+  
+  <div class="control-group">
+    <label for="itemCount" style="font-size: 0.9em; color: #333;">Items:</label>
+    <input type="number" id="itemCount" value="50" min="10" max="200">
+    <button id="btn-regen">Regenerate All</button>
+  </div>
 </div>
 
 <div id="setsContainer"></div>
 
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+  import { 
+    getFirestore, 
+    doc, 
+    onSnapshot, 
+    setDoc, 
+    updateDoc 
+  } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
-<!-- JSON with pregenerated numbers -->
-<script id="numberData" type="application/json">
-{
-  "2-digit": ["13","27","39","42","56","68","74","89","91","34","29","57","83","46","65","78","12","94","26","31","53","64","85","72","49","61","88","36","95","14","67","24","45","81","16","73","28","59","63","47","19","32","41","86","25","38","52","69","87","93","18","44","62","35","48","21","84","92","54","71","23","76","15","58","13","27","39","42","56","68","74","89","91","34","29","57","83","46","65","78","12","94","26","31","53","64","85","72","49","61","88","36","95","14","67","24","45","81","16","73","28","59","63"],
-  "3-digit": ["139","278","394","421","563","689","742","895","916","347","295","573","836","469","652","781","124","947","268","315","534","641","859","729","498","612","883","361","954","147","675","246","457","814","169","732","285","596","634","478","193","324","415","862","253","389","527","698","871","936","182","446","623","358","486","219","845","927","549","713","238","764","152","589","318","472","694","856","927","143","269","378","452","681","795","814","936","251","487","692","357","468","529","613","784","892","913","245","386","471","562","639","758","864","935","217","428","519","673","895"],
-  "4-digit": ["1394","2783","3941","4216","5638","6894","7429","8951","9163","3472","2957","5738","8369","4695","6521","7814","1249","9472","2683","3157","5346","6418","8597","7294","4981","6129","8834","3619","9542","1473","6758","2469","4571","8146","1692","7325","2859","5963","6347","4781","1936","3245","4158","8629","2537","3895","5271","6983","8716","9364","1827","4469","6235","3589","4862","2195","8457","9273","5496","7138","2384","7649","1527","5893","3186","4725","6948","8561","9274","1439","2697","3784","4528","6819","7952","8147","9365","2518","4873","6925","3579","4682","5296","6137","7849","8921","9136","2459","3861","4719","5628","6394","7582","8647","9351","2174"],
-  "5-digit": ["13942","27839","39416","42163","56389","68947","74291","89516","91634","34729","29573","57381","83694","46952","65218","78146","12497","94723","26831","31578","53462","64189","85972","72941","49816","61293","88347","36195","95421","14736","67582","24693","45718","81469","16927","73259","28596","59634","63478","47812","19364","32457","41586","86293","25378","38952","52719","69835","87169","93641","18273","44695","62358","35896","48621","21957","84571","92734","54968","71384","23841","76495","15279","58936","31864","47251","69483","85612","92743","14395","26973","37846","45289","68193","79521","81476","93652","25186","48739","69254","35791","46829","52963","61378","78495","89216","91365","24597","38614","47192","56283","63947","75824","86479","93512","21746"],
-  "6-digit": ["139421","278395","394168","421639","563894","689471","742915","895163","916347","347291","295738","573816","836947","469521","652183","781469","124973","947231","268315","315789","534628","641892","859724","729418","498163","612934","883471","361952","954218","147369","675823","246935","457189","814695","169273","732596","285961","596347","634781","478129","193642","324571","415869","862934","253789","389526","527193","698351","871693","936417","182739","446951","623581","358962","486219","219573","845719","927341","549683","713846","238417","764952","152793","589364","318649","472519","694831","856127","927436","143957","269735","378462","452891","681934","795218","814769","936524","251869","487391","692547","357918","468293","529637","613784","784952","892163","913657","245971","386142","471926","562839","639471","758246","864795","935127","217463"],
-  "7-digit": ["1394216","2783951","3941682","4216395","5638947","6894712","7429153","8951634","9163472","3472915","2957381","5738164","8369472","4695218","6521839","7814695","1249736","9472318","2683159","3157892","5346281","6418927","8597243","7294185","4981639","6129347","8834719","3619528","9542183","1473695","6758231","2469357","4571893","8146952","1692738","7325964","2859617","5963471","6347819","4781293","1936425","3245718","4158692","8629345","2537896","3895261","5271938","6983514","8716932","9364175","1827396","4469518","6235819","3589621","4862193","2195738","8457196","9273418","5496831","7138469","2384175","7649521","1527938","5893642","3186495","4725193","6948317","8561279","9274361","1439572","2697358","3784629","4528916","6819342","7952186","8147695","9365241","2518693","4873916","6925478","3579182","4682935","5296371","6137849","7849521","8921634","9136572","2459718","3861429","4719263","5628391","6394718","7582469","8647952","9351274","2174639"],
-  "8-digit": ["13942168","27839516","39416827","42163958","56389471","68947123","74291536","89516347","91634729","34729158","29573816","57381649","83694721","46952183","65218394","78146952","12497368","94723185","26831597","31578924","53462817","64189273","85972431","72941859","49816392","61293478","88347195","36195283","95421836","14736952","67582319","24693578","45718936","81469527","16927384","73259641","28596173","59634718","63478192","47812936","19364257","32457189","41586923","86293451","25378964","38952617","52719384","69835149","87169325","93641758","18273964","44695182","62358197","35896214","48621937","21957386","84571963","92734185","54968319","71384692","23841759","76495213","15279386","58936427","31864952","47251936","69483172","85612794","92743615","14395728","26973581","37846295","45289163","68193427","79521869","81476953","93652418","25186937","48739165","69254781","35791824","46829351","52963718","61378495","78495213","89216347","91365728","24597183","38614295","47192635","56283917","63947182","75824691","86479523","93512749","21746395"],
-  "9-digit": ["139421683","278395164","394168275","421639586","563894712","689471239","742915368","895163472","916347291","347291586","295738164","573816493","836947219","469521837","652183947","781469523","124973681","947231859","268315972","315789246","534628173","641892735","859724318","729418596","498163927","612934781","883471952","361952836","954218369","147369527","675823194","246935781","457189362","814695273","169273846","732596419","285961739","596347182","634781925","478129364","193642571","324571893","415869237","862934519","253789641","389526173","527193846","698351492","871693258","936417581","182739641","446951827","623581974","358962147","486219375","219573861","845719632","927341859","549683192","713846927","238417596","764952138","152793864","589364271","318649527","472519364","694831729","856127945","927436159","143957283","269735814","378462951","452891637","681934275","795218693","814769532","936524187","251869374","487391652","692547813","357918246","468293517","529637184","613784952","784952139","892163475","913657284","245971836","386142951","471926358","562839174","639471825","758246913","864795231","935127495","217463958"],
-  "10-digit": ["1394216835","2783951647","3941682759","4216395861","5638947129","6894712395","7429153682","8951634729","9163472915","3472915863","2957381649","5738164932","8369472195","4695218374","6521839471","7814695238","1249736815","9472318592","2683159724","3157892468","5346281739","6418927351","8597243186","7294185962","4981639275","6129347819","8834719526","3619528364","9542183697","1473695271","6758231948","2469357816","4571893629","8146952731","1692738462","7325964195","2859617394","5963471825","6347819257","4781293641","1936425718","3245718935","4158692371","8629345196","2537896419","3895261738","5271938461","6983514927","8716932584","9364175812","1827396415","4469518273","6235819749","3589621471","4862193758","2195738614","8457196329","9273418596","5496831927","7138469275","2384175961","7649521384","1527938649","5893642715","3186495271","4725193648","6948317295","8561279453","9274361592","1439572836","2697358149","3784629512","4528916375","6819342759","7952186934","8147695321","9365241875","2518693749","4873916527","6925478139","3579182461","4682935172","5296371849","6137849527","7849521396","8921634751","9136572849","2459718362","3861429517","4719263581","5628391749","6394718253","7582469138","8647952319","9351274951","2174639582"]
-}
-</script>
+  const firebaseConfig = {
+    apiKey: "AIzaSyBdTht0Qu-J_SJSzotwM6fMYR4PAFVj63s",
+    authDomain: "mind-training-f1b2b.firebaseapp.com",
+    projectId: "mind-training-f1b2b",
+    storageBucket: "mind-training-f1b2b.firebasestorage.app",
+    messagingSenderId: "1021385760984",
+    appId: "1:1021385760984:web:154f647b1fc90c34fef7ad",
+    measurementId: "G-CVNPF4YL6B"
+  };
 
-<script>
-const data = JSON.parse(document.getElementById("numberData").textContent);
-const container = document.getElementById("setsContainer");
+  const app = initializeApp(firebaseConfig);
+  const db = getFirestore(app);
 
-let total = 0;
-for (let key in data) total += data[key].length;
+  // Using "v2_dynamic" to keep your data separate
+  const DOC_ID = "memory_practice_v2_dynamic";
+  const docRef = doc(db, "memory_practice", DOC_ID);
 
-// Load saved state from localStorage
-let savedState = JSON.parse(localStorage.getItem("completedState") || "{}");
+  const container = document.getElementById("setsContainer");
+  const statusIndicator = document.getElementById("statusIndicator");
+  const globalCounter = document.getElementById("globalCounter");
+  const inputCount = document.getElementById("itemCount");
 
-function renderSets() {
-  for (let set in data) {
-    const div = document.createElement("div");
-    div.className = "set";
+  // --- HELPER: DATA GENERATION ---
+  
+  function generateRandomNumberString(digits) {
+    let result = '';
+    result += Math.floor(Math.random() * 9) + 1; // No leading zero
+    for (let i = 1; i < digits; i++) {
+      result += Math.floor(Math.random() * 10);
+    }
+    return result;
+  }
 
-    const title = document.createElement("h2");
-    title.textContent = set + " combinations";
-
-    const counterWrap = document.createElement("div");
-    counterWrap.style.display = "flex";
-    counterWrap.style.alignItems = "center";
-    counterWrap.style.gap = "10px";
-
-    const counter = document.createElement("div");
-    counter.className = "counter";
-    counter.id = set + "-counter";
-    counter.textContent = `Completed: 0 / ${data[set].length}`;
-
-    const setResetBtn = document.createElement("button");
-    setResetBtn.textContent = "Reset";
-    setResetBtn.style.padding = "2px 8px";
-    setResetBtn.addEventListener("click", () => resetSet(div, set));
-
-    counterWrap.appendChild(counter);
-    counterWrap.appendChild(setResetBtn);
-
-    const ul = document.createElement("ul");
-    data[set].forEach(num => {
-      const li = document.createElement("li");
-      li.textContent = num;
-
-      // restore highlight if it was saved
-      if (savedState[set] && savedState[set].includes(num)) {
-        li.classList.add("completed");
+  function generateNewDataset(count) {
+    const categories = [
+      "2-digit", "3-digit", "4-digit", "5-digit", 
+      "6-digit", "7-digit", "8-digit", "9-digit", "10-digit"
+    ];
+    
+    const newDataset = {};
+    categories.forEach(cat => {
+      const digits = parseInt(cat.split('-')[0]);
+      const list = [];
+      for(let i=0; i<count; i++) {
+        list.push(generateRandomNumberString(digits));
       }
-
-      li.addEventListener("click", () => toggleHighlight(li, set));
-      ul.appendChild(li);
+      newDataset[cat] = list;
     });
 
-    div.appendChild(title);
-    div.appendChild(counterWrap);
-    div.appendChild(ul);
-    container.appendChild(div);
+    return {
+      dataset: newDataset,
+      completed: {} 
+    };
   }
-  updateCounters();
-}
-renderSets();
 
-function toggleHighlight(li, set) {
-  li.classList.toggle("completed");
-  saveState();
-  updateCounters();
-}
+  // --- CLOUD SYNC ---
 
-function updateCounters() {
-  let totalDone = 0;
+  let currentData = null;
 
-  document.querySelectorAll(".set").forEach(div => {
-    const counter = div.querySelector(".counter");
-    const lis = div.querySelectorAll("li");
-    let doneSet = 0;
-
-    lis.forEach(li => {
-      if (li.classList.contains("completed")) doneSet++;
-    });
-
-    counter.textContent = `Completed: ${doneSet} / ${lis.length}`;
-    totalDone += doneSet;
+  onSnapshot(docRef, (docSnap) => {
+    if (docSnap.exists()) {
+      statusIndicator.textContent = "Synced with cloud";
+      statusIndicator.style.color = "#16a34a";
+      
+      const fullData = docSnap.data();
+      currentData = fullData.dataset;
+      
+      // --- FIX: SYNC INPUT BOX WITH ACTUAL DATA COUNT ---
+      // We check the length of the '2-digit' array to see how many items exist
+      if (currentData && currentData['2-digit']) {
+        const actualCount = currentData['2-digit'].length;
+        if (actualCount > 0) {
+           inputCount.value = actualCount;
+        }
+      }
+      
+      renderAll(fullData.dataset, fullData.completed || {});
+    } else {
+      statusIndicator.textContent = "Initializing database...";
+      const initialData = generateNewDataset(50);
+      setDoc(docRef, initialData);
+    }
+  }, (error) => {
+    console.error("Firebase Error:", error);
+    statusIndicator.textContent = "Error connecting to cloud.";
+    statusIndicator.style.color = "#dc2626";
   });
 
-  document.getElementById("globalCounter").textContent =
-    `Completed: ${totalDone} / ${total}`;
-}
+  function renderAll(dataset, completedMap) {
+    container.innerHTML = "";
+    let totalItems = 0;
+    let totalDone = 0;
 
-function resetAll() {
-  document.querySelectorAll("li").forEach(li => li.classList.remove("completed"));
-  savedState = {};
-  localStorage.removeItem("completedState");
-  updateCounters();
-}
+    const order = ["2-digit", "3-digit", "4-digit", "5-digit", "6-digit", "7-digit", "8-digit", "9-digit", "10-digit"];
 
-function resetSet(div, set) {
-  div.querySelectorAll("li").forEach(li => li.classList.remove("completed"));
-  delete savedState[set];
-  localStorage.setItem("completedState", JSON.stringify(savedState));
-  updateCounters();
-}
+    order.forEach(setKey => {
+      const items = dataset[setKey];
+      if (!items) return;
 
-function saveState() {
-  savedState = {};
-  document.querySelectorAll(".set").forEach(div => {
-    const title = div.querySelector("h2").textContent.split(" ")[0]; // e.g. "2-digit"
-    savedState[title] = [];
-    div.querySelectorAll("li.completed").forEach(li => {
-      savedState[title].push(li.textContent);
+      totalItems += items.length;
+      let sectionDone = 0;
+
+      const div = document.createElement("div");
+      div.className = "set";
+      div.id = `section-${setKey}`;
+
+      // Header
+      const title = document.createElement("h2");
+      title.innerHTML = `${setKey} <button class="btn-set-reset" id="reset-${setKey}">Reset</button>`;
+      
+      const counterDiv = document.createElement("div");
+      counterDiv.className = "counter";
+      
+      const ul = document.createElement("ul");
+      
+      items.forEach((num, index) => {
+        const li = document.createElement("li");
+        li.textContent = num;
+        
+        const uid = `${setKey}-${index}`;
+        li.dataset.uid = uid;
+
+        if (completedMap[uid]) {
+          li.classList.add("completed");
+          sectionDone++;
+        }
+
+        li.addEventListener("click", () => toggleItem(uid, li));
+        ul.appendChild(li);
+      });
+
+      totalDone += sectionDone;
+      counterDiv.textContent = `${sectionDone} / ${items.length}`;
+
+      title.appendChild(counterDiv);
+      div.appendChild(title);
+      div.appendChild(ul);
+      container.appendChild(div);
+
+      div.querySelector(`#reset-${setKey}`).addEventListener("click", () => resetSection(setKey, items.length));
     });
-  });
-  localStorage.setItem("completedState", JSON.stringify(savedState));
-}
 
-function copyAll() {
-  let text = "";
-  for (let set in data) {
-    text += set + ":\n" + data[set].join(" ") + "\n\n";
+    globalCounter.textContent = `Total Completed: ${totalDone} / ${totalItems}`;
   }
-  navigator.clipboard.writeText(text);
-  alert("Copied all numbers to clipboard!");
-}
 
-function downloadTxt() {
-  let text = "";
-  for (let set in data) {
-    text += set + ":\n" + data[set].join(" ") + "\n\n";
+  // --- ACTIONS ---
+
+  async function toggleItem(uid, li) {
+    const isNowComplete = !li.classList.contains("completed");
+    if(isNowComplete) li.classList.add("completed");
+    else li.classList.remove("completed");
+
+    await updateDoc(docRef, {
+      [`completed.${uid}`]: isNowComplete
+    });
   }
-  const blob = new Blob([text], {type: "text/plain"});
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement("a");
-  a.href = url;
-  a.download = "number_sets.txt";
-  a.click();
-  URL.revokeObjectURL(url);
-}
+
+  async function resetSection(setKey, count) {
+    if(!confirm(`Reset ${setKey}?`)) return;
+    const updates = {};
+    for(let i=0; i<count; i++) {
+      updates[`completed.${setKey}-${i}`] = false;
+    }
+    await updateDoc(docRef, updates);
+  }
+
+  async function resetAllProgress() {
+    if(!confirm("Reset ALL progress? Numbers will stay the same.")) return;
+    await updateDoc(docRef, { completed: {} });
+  }
+
+  async function regenerateAll() {
+    const count = parseInt(inputCount.value) || 50;
+    if(!confirm(`WARNING: This will generate NEW numbers (${count} per section) and WIPE progress for everyone.`)) return;
+    
+    statusIndicator.textContent = "Regenerating...";
+    const newData = generateNewDataset(count);
+    await setDoc(docRef, newData);
+  }
+
+  // --- EXPORT ---
+
+  window.copyAll = function() {
+    if(!currentData) return;
+    let text = "";
+    const order = ["2-digit", "3-digit", "4-digit", "5-digit", "6-digit", "7-digit", "8-digit", "9-digit", "10-digit"];
+    order.forEach(key => {
+      if(currentData[key]) {
+        text += key + ":\n" + currentData[key].join(" ") + "\n\n";
+      }
+    });
+    navigator.clipboard.writeText(text);
+    alert("Copied to clipboard!");
+  }
+
+  window.downloadTxt = function() {
+    if(!currentData) return;
+    let text = "";
+    const order = ["2-digit", "3-digit", "4-digit", "5-digit", "6-digit", "7-digit", "8-digit", "9-digit", "10-digit"];
+    order.forEach(key => {
+      if(currentData[key]) {
+        text += key + ":\n" + currentData[key].join(" ") + "\n\n";
+      }
+    });
+    const blob = new Blob([text], {type: "text/plain"});
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "memory_sets.txt";
+    a.click();
+    URL.revokeObjectURL(url);
+  }
+
+  document.getElementById('btn-reset').addEventListener('click', resetAllProgress);
+  document.getElementById('btn-regen').addEventListener('click', regenerateAll);
+  document.getElementById('btn-copy').addEventListener('click', window.copyAll);
+  document.getElementById('btn-download').addEventListener('click', window.downloadTxt);
+
 </script>
 
 </body>
