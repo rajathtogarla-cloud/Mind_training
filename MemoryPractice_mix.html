@@ -2,257 +2,518 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Tough Number Combination Sets (Static)</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+  <title>Cloud Mixed Practice (Mobile)</title>
   <style>
     body { 
       font-family: Arial, sans-serif; 
-      margin: 20px; 
+      margin: 10px; /* Reduced margin for mobile */
       background: #ffffff;
       color: #333;
+      -webkit-text-size-adjust: 100%; /* Prevents iOS text size weirdness */
     }
     h1 { 
       text-align: center; 
       color: #1e3a8a; 
-      margin-bottom: 20px;
+      margin-bottom: 10px;
+      font-size: 1.5em;
     }
-    h2 { 
-      color: #2563eb; 
-      margin-bottom: 8px; 
+    .status-bar {
+      text-align: center;
+      font-size: 0.85em;
+      color: #6b7280;
+      margin-bottom: 15px;
+      height: 20px;
     }
+    
+    /* --- Controls (Responsive) --- */
     .controls { 
-      text-align: center; 
-      margin: 15px 0; 
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 10px;
+      align-items: center;
+      margin: 10px auto; 
+      padding: 15px;
+      background: #f8fafc;
+      border-radius: 8px;
+      max-width: 900px;
+      border: 1px solid #e2e8f0;
     }
-    .controls button { 
-      margin: 5px; 
-      padding: 8px 14px; 
+    
+    .control-group {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      background: #e2e8f0;
+      padding: 8px 12px; /* Larger touch target */
+      border-radius: 6px;
+    }
+
+    input[type="number"] {
+      border: 1px solid #cbd5e1;
+      padding: 8px;
+      border-radius: 4px;
+      width: 60px;
+      text-align: center;
+      font-weight: bold;
+      font-size: 16px; /* Prevents zoom on iPhone */
+    }
+    input[type="range"] {
+      width: 100px;
+      cursor: pointer;
+    }
+    
+    button { 
+      padding: 10px 16px; /* Larger touch target */
       border: none;
       border-radius: 6px;
       cursor: pointer;
       font-weight: bold;
       color: white;
-      transition: background 0.2s;
+      font-size: 14px;
+      transition: opacity 0.2s;
     }
-    .controls button:nth-child(2) { background: #dc2626; } /* Reset All - red */
-    .controls button:nth-child(3) { background: #2563eb; } /* Copy All - blue */
-    .controls button:nth-child(4) { background: #16a34a; } /* Download - green */
-    .controls button:nth-child(5) { background: #6b7280; } /* Print - gray */
-    .controls button:hover { opacity: 0.85; }
+    button:hover { opacity: 0.85; }
+    
+    #btn-reset { background: #dc2626; } 
+    #btn-copy { background: #2563eb; } 
+    #btn-download { background: #16a34a; } 
+    #btn-regen { background: #b91c1c; border: 1px solid #991b1b; } 
+    .btn-secondary { background: #64748b; }
 
-    ul { list-style: none; padding: 0; }
+    ul { list-style: none; padding: 0; text-align: center; }
+    
+    /* --- LIST ITEM STYLING (Mobile Friendly) --- */
     li { 
-      display: inline-block; 
-      margin: 4px; 
-      padding: 6px 12px; 
+      display: inline-block;
+      margin: 6px; 
+      padding: 12px 16px; /* Much larger padding for fingers */
       border: 1px solid #cbd5e1; 
-      border-radius: 6px; 
-      cursor: pointer;
+      border-radius: 8px; 
       background: #ffffff;
-      transition: background 0.2s, color 0.2s;
+      transition: all 0.1s;
+      user-select: none;
+      cursor: pointer;
+      
+      font-family: "Courier New", Courier, monospace; 
+      font-size: 18px; /* Larger font */
+      font-weight: 600;               
+      color: #334155;     
+      
+      /* Make it easier to tap without hitting neighbor */
+      box-shadow: 0 1px 2px rgba(0,0,0,0.05);
     }
-    li:hover {
-      background: #e2e8f0;
-    }
-    .completed { 
+    li:active { transform: scale(0.96); background: #f1f5f9; }
+    
+    li.completed { 
       background: #bbf7d0 !important; 
-      color: #065f46; 
-      font-weight: bold;
+      color: #065f46 !important; 
+      border-color: #86efac;
     }
 
     .set { 
-      margin-top: 25px; 
-      padding: 12px; 
+      margin-top: 20px; 
+      padding: 10px; 
       background: #f1f5f9; 
       border-radius: 8px; 
-      box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+      border: 1px solid #e2e8f0;
     }
+    
+    /* Section Header Layout */
+    .set h2 { 
+      color: #2563eb; 
+      margin-bottom: 12px; 
+      display: flex;
+      flex-wrap: wrap; /* Allows wrapping on small phones */
+      align-items: center;
+      gap: 10px;
+      font-size: 1.2em;
+    }
+
     .counter { 
-      font-weight: bold; 
+      font-family: Arial, sans-serif;
+      font-size: 0.8em;
+      font-weight: normal; 
       color: #16a34a;
+      background: #fff;
+      padding: 4px 10px;
+      border-radius: 12px;
+      border: 1px solid #cbd5e1;
+      white-space: nowrap;
     }
-    .set button { 
-      background: none; 
+
+    /* --- BUTTONS --- */
+    .btn-set-reset { 
+      background: white; 
       border: 1px solid #9ca3af; 
       border-radius: 4px; 
-      padding: 2px 8px; 
-      cursor: pointer;
-      font-size: 0.85em;
+      padding: 6px 10px; 
       color: #374151;
-      transition: all 0.2s;
+      font-size: 0.8em;
+      margin-left: auto; /* Pushes to right */
     }
-    .set button:hover {
-      background: #e5e7eb;
+
+    .btn-audio-toggle {
+      background: #e2e8f0;
+      border: 1px solid #cbd5e1;
+      color: #64748b;
+      padding: 6px 12px;
+      border-radius: 20px;
+      font-size: 14px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      margin-right: 5px;
     }
-    @media print {
-      .controls { display: none; }
-      button { display: none; }
-      body { background: white; }
+    .btn-audio-toggle.active {
+      background: #3b82f6;
+      color: white;
+      border-color: #2563eb;
+    }
+
+    /* --- MOBILE SPECIFIC TWEAKS --- */
+    @media (max-width: 600px) {
+      .controls {
+        flex-direction: column;
+        width: 90%;
+      }
+      .control-group {
+        width: 100%;
+        justify-content: center;
+      }
+      button {
+        width: 100%; /* Full width buttons on mobile */
+        margin-bottom: 5px;
+      }
+      li {
+        display: block; /* Stack items vertically on mobile? */
+        /* Or keep inline-block but make them wider */
+        width: 90%; 
+        margin: 8px auto;
+        text-align: center;
+        font-size: 20px; /* Even bigger text */
+      }
+      .set h2 {
+        justify-content: space-between;
+      }
+      .btn-set-reset {
+        margin-left: 0;
+      }
     }
   </style>
 </head>
 <body>
 
-<h1>Tough Number Combination Sets (Static)</h1>
+<h1>Mixed Combinations (Mobile)</h1>
+<div class="status-bar" id="statusIndicator">Connecting to cloud...</div>
+
 <div class="controls">
-  <div id="globalCounter">Completed: 0 / 964</div>
-  <button onclick="resetAll()">Reset All</button>
-  <button onclick="copyAll()">Copy All</button>
-  <button onclick="downloadTxt()">Download .txt</button>
-  <button onclick="window.print()">Print</button>
+  <div style="width: 100%; text-align: center; margin-bottom: 10px; color: #1e3a8a; font-weight: bold; font-family: Arial;" id="globalCounter">
+    Loading...
+  </div>
+  
+  <button id="btn-reset">Reset Progress</button>
+  <div style="display:flex; gap:5px; width:100%;">
+    <button id="btn-copy" class="btn-secondary" style="flex:1;">Copy</button>
+    <button id="btn-download" class="btn-secondary" style="flex:1;">Download</button>
+  </div>
+  
+  <div class="control-group">
+    <label for="speakSpeed" style="font-size: 0.9em; color: #333;">Voice Speed:</label>
+    <input type="range" id="speakSpeed" min="0.5" max="1.5" step="0.1" value="0.9">
+  </div>
+  
+  <div class="control-group">
+    <label for="itemCount" style="font-size: 0.9em; color: #333;">Items:</label>
+    <input type="number" id="itemCount" value="50" min="10" max="200">
+  </div>
+  <button id="btn-regen">Regenerate</button>
 </div>
 
 <div id="setsContainer"></div>
 
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+  import { 
+    getFirestore, 
+    doc, 
+    onSnapshot, 
+    setDoc, 
+    updateDoc 
+  } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
-<!-- JSON with pregenerated numbers -->
-<script id="numberData" type="application/json">
-{
-  "6-mixed":["^Aavas","n9h*&7","K11ekM","I6ZeUQ","uCeIfe","ecvfH4","do6rY@","^q&y$^","LyrfYD","oP4%rT","&D7^5x","HZCSrB","aa^zec","cMqQ5w","NbBJer","^gl&SW","Plnd39","^UI$o&","$o2Yvo","*Mp!Q-","JD#X%#","&l+&T5","5fQU&^","xZl7gJ","#eDxvC","G^ZAsN","77u@MC","D#GeWF","N^OcKr","I$BmA9","8tv3eZ","*+0Bkt","Lzv0i^","@y/O1m","%^*cUr","^s4Lqi","&l8etE","XbjQs*","yuQop-","Ljdoks","%xZLL3","+HC5AT","q+#Xz5","fuW$u*","QFJ3rB","wV%h1a","zr1^-$","ccpzKf","ij#l^A","yJJ7Pw","DjL*^D","wQSj7Z","ze^61^","y4sk7z","mBfg73","z^hIDE","w$37du","QyDFOA","@aMvq#","4pPFpE","8O+Mj-","u^-90h","EQnDGu","bSmT6X","Cq5wZH","hrwpSY","QbC$uV","#d-Ak!","/DOh##","QQ$BxM","#KSW8j","QXaQw2","zTlu-G","sT4*EM","5h9OHF","42Ljuw","80/F*7","!xyCb#","^xaMS^","/*beZ*","7+onVC","&IzxB/","ioTnR9","dJrx+C","RdoElc","6Bn!ag","$$9U!v","03xbT@","1QqA-f","2hCKu%","Ni%-ml","tafsm@","Evn+wM","NjLS-@","DuUnne","p/ThU0","QPbHs&","5mTbqa","M+6/*y","z**5T4"],
-  "7-mixed":["RW/nt7P","V^xVQYk","H*&*hEs","ygV5c+^","mTQl/b3","OtyI!LZ","Y%vqsfB","OYIBWXP","lzmAgz1","Msz8oGW","9t^b0Z^","hBC5j8i","^+C8dF&","MMC&om8","4Z6^AUD","wj-V+51","F9*ADBs","qOPeOoV","O*&Hv5u","b-fI$zZ","cFRA6eD","Tk^ng^G","SqTG/xt","6&R2Psv","f%eNEAd","a9LVg4+","uOHj-iF","2p20zF-","@8i$8L6","4-4m^Sb","8^WO+Ii","^pD!9O2","86#HFwo","Rh%NHHb","n%@5wI9","QU#g7qP","i3F76Cg","XL+Uut7","uhVz64n","0*yQY3U","79RSf/o","Qqt-$z/","8y!xtGP","0#-&th%","o/i4$Gd","64gdRSm","3AFmW3Y","+ipRs#E","s6G/$*S","QqJ$B@a","Vyv$vv0","B^^$q1N","%A*a3dZ","MbN#qSx","B4rq^Ch","IiqeUtg","piHL4Dx","7bncn5s","^ziwQt6","Ofervl1","#Snhmjz","sAOuKv5","F+GxGVZ","-VDZoj^","f%MHBWY","iT*s+vy","AbqyImx","CQCo9ro","IX^VudT","Do7O@oB","m*lnnzC","*L*gjZE","$ksMYn6","Vu@wmMk","DqaJWIA","P*w@0z7","sMNl$Oe","7tt9FPS","INETYrD","+D1VKi!","9Iyc%t1","av7kb^D","tneSXdI","LjWCKTI","5GUAz5X","qSkIQwO","9kx1W!h","6%Lq4It","UqU*U^d","3*02-rY","PYk%kla","Dc3BK$X","6Y-Nn7&","c2&y&Mh","JY4g%rK","GRA%I1t","@OZU+/&","CSVoa@Q","q/iO6*D","GqGHO^p"],
-  "8-mixed":["r0w^KH@L","5H7&&+*3","T1+eL5TN","dneXCo4^","uM^uUuu1","W^T^6qHC","jFhXG7yu","4%T%F2xA","4p^Bl6*K","9!!^js70","v!0kz^Xi","X@et$XH$","VPKRyNfv","JQuVZ@z5","lt2V%S8q","SaM&8^O&","^BRq-7A^","MLJwb8&O","vDBD&DGJ","IoZA!NK#","h1c91!/8","Ui^Ev2YP","L4x8s9z8","3Qh@&ePl","^apF0neW","5yHq+JN^","m$A#f8Dv","9/1cQ3u4","^pX3kI+R","rFYXU%g@","-AkccWiw","^^KDWYT!","FN9VK$$C","+JX8$$5@","H!S*tNo+","o^^eb@FN","#dEqFgu/","AqM$0mJH","7gghYha^","q^p*b&Si","erP+MMg$","xusH^zJ/","^GL*/54u","V1ql@^-W","1v&ZuqQL","hX@INH$8","nPdIBKyW","IDw7k5A#","T7*2Pld6","rO*qf-84","OJo/^a!I","cvjtdHw^","+LrH5nKL","6s*GMF#y","23u*zm8K","hBgniltg","Dy5ShLGu","+eNpZyg5","ZF8J^w*P","ZuJ1Ej9Z","^H5A-0fI","n5y7#ov-","*xiZ^L/K","nnwk!uaN","wzl0^uPy","*el@dm#s","*v9z2mJi","WRcUUceL","%JBoTIf6","TS0arsQZ","+g&#01Al","/Csl3seX","MDVognoR","ijFAyP0W","T&Y#pdTI","f+m0nrOY","-U3^RXFO","65aiC@CD","sW$wUDx-","Hs-^K^t&","0Nxel5Z2","7!5Wcg%k","a&AhBdoD","mx&h!V7C","ScE!v^@B","csPK7k#5","an/###*T","uh0-v*5H","60gSZelO","yKpbISNi","Qo6F^8s-","DJ*KgerI","tu&LMTjE","+!wnr^ke","E-ng4X*-","/&wb9U%$","mB9FCZ$/","n5I7IY^n","S5TGgmC9","2HM$lbM0"],
-  "9-mixed":["j$mN6^dz3","u58VsI$R*","8TIXimv%a","2l8PLmgc9","+n!Q4S@r*","4YO7dAhBp","tIW@!lXir","^XMG9@JN&","tI4RHb4RN","sv&eJB5R/","a-Ta3kAis","&$!gy#cyn","jJ/WAczxE","Oe2X*n68a","aPx@fcC00","vVJSL6PC5","/RBm+&mdD","Gs0fWA@mX","@krgRdCR^","o@kK$x$9+","TqEk9VvSO","^MRHqojIL","R@CM3nlE^","rx@UeyHyT","oQ4#^lGOT","mo@$gOa04","b7pB1*AdU","jn6UAjnX&","llTR/5+R$","mJiX^&h$L","c+2Hrf*qR","%-BO21u^#","jD7l5WJCx","9*SzMsnco","QNtSC9BDI","ZYTf/b%2H","02pRS0VoI","CxyYB32^Q","jTsC0Rqpb","Qb4%lq7b-","*dXFV97j8","63ZOG+9@S","F+t28xtAT","#KHWFsD-c","dj2pggUnV","x$cW&5w2V","rRJR0cgJW","pX+dOc#-h","IhHNShwkq","kHAQ1862J","28&yXg71W","em!Tx6*Oo","^r5c7Q&Z!","z#m$$%#Fh","*36U%mUw#","^Xptd*ilh","6j5elQho*","%gwOJOjjo","8ATEwRd*v","nhNf@bvZ-","us8gH45QK","CQfM7!f7C","fv8jcyq3^","i6t73arVF","tdVWl@!qX","fyq*nU^yT","t^kFaAFsb","1IW$D%Wqg","dRKiB1AYJ","vJC*KYfwc","cNJkcrdnV","9GDRy@SAy","EvppZ8J2A","rpOGr%OcN","dx*&RDDg5","TUg50MpG3","N-+fYcMNN","cE$P9CIUd","xvUUVZ*$9","ppv@p%QIz","0gx^^tJEP","C2WW%OK4l","!#xEYJPqg","^cQfLC^iF","E03hDqbm/","9oe&yT!MC","q55r8r/-#","ivDfIp86d","iIDrhA2BM","%KJhj*#YM","QjBqFyyDX","OV@jlIN@Z","^#gfwxwG4","-gj96u*l$","n^*Q%YHr3","kl*Qc1noM","4igwHl+YT","NVb&U7KTr","B!twH@lty","2&7j%@LCP"],
-  "10-mixed":["$r0Fjt#A%V","UOwYr^L+I1","Snz^yrNOf0","IrPKg-lZjp","$6gDKqhN+$","jEsZ4LjAf#","LXb0G5&q$q","Oa*rftHLnt","87@@&m^c9o","$4w6&zGIqY","0pecCmSSlb","Kz+VY9r*&M","NsJ9%NC51O","Q#X6m6-IGK","Y87xUx81$u","-P3@7pypG2","hiGM4iaFch","aD5-H*-7jo","gbxE1xvM#m","Co46^6BJ!d","K19Oj0x%sq","BE7hQI2@m*","H/rs+*PjIs","GbgYsC1q^3","Q9BWO4nmRI","*HpWt&R4Y&","4*eJVbNnA4","7X^D*@D6ZM","0^%j*OUF8Z","#3YGbnoYbJ","Qnl10!+oGr","Es9Q-Vud9*","BHQ4Q&oK8w","4z^un+3n2#","TA@#w&W@$V","^TC-f58t2c","kAKW&k@z/M","2F0dpskkjR","NZj9CH+#LY","D^2*D^bApG","2q$H/+zDXv","9t3RD@hA&c","cPkFbyHOUi","^0cRmS@kcN","Jtay*LOTop","o3ah^t+xs/","c/Gv/peG*x","&bliR3#XNi","Tba3@DR*UJ","*/S##2VN+J","RPzBmB8wN8","ZbsM/*M9^*","d%Og#7mArM","lOhWMdP283","DtfaJoqJmp","S!62$INCZu","1-jh7wePzY","-3rviAw+*6","BLIafBOYBA","b!$jF3uEu%","%5tahHHL9K","hjFNf@5Wdp","quq$^P#cLY","MaU*N!MKRe","biY*/R&^$Y","9$-I+pZB4V","PTNnjuZVx2","jaxzju5+t-","qh41^^nLC3","7ZymT4*j^w","jmBBN6!/T1","*WIU#&cD8B","7XY1zS7ezW","fQY1v4%oF#","Cn1ZIVcFCl","K8Cx6JrLBk","WUB5pq&4@3","6xup$w@8Rp","a2Mj+q*Zse","pAfXOSOy#G","ldo9VWghfB","5-7i%/!i&X","#Yxgli3*MS","km8o*mdAxM","w%977$%/qc","#7JbDH+12-","SX!Q%YMW6D","WwRZhgvO8Z","*sz28^Tv0L","jnDs4XfvcW","dxbT*3-rW8","e$k^^#*MlA","lsW&yM4Llj","raTbjpJ7vT","g@EKOvgukQ","1udW&cM%pV","0Dy0*-!vey","ahT+6r%Z$#","/ui#7LMS8l","i4w@yfpWvv"],
-  "11-mixed":["bi86Ujl^!-w","annA*zMD49q","G-abZhKmDn5","$Fm@9#*m!9I","qA&9#sxWmx0","rCMmHP!/CqX","xr-8!oqkqjb","^/&5fRMk1g!","sS0Ad!6d9vr","r*C0^^X^jOf","QFOx^lU0D1z","5O^A5KmmXLS","$2nOmQnIZN-","#Hm-ciLyNBp","Lz&*64c+P/o","yfW7xeseHy7","TyKUnfHmB/H","FEtvGuv4zLB","r8or$qrPax6","ALH+*Q&e*1w","*f1O^ET7Icr","eUgONu*o3t*","2rmKY!J9&fa","Yt8WMIivT$H","Tz*RC1xI*4D","#mYhcMFkuQX","HYIAtcVH2RI","*8qG#gssVK%","SzRh1FTKvrU","-X7jCUxg5xb","VlGj/6KsUn3","IC$xnG6*U^I","3UNEgv*m-fJ","xGTzsPgzglY","Q-S+*IPL^Hw","*v^^iob!wja","aUOMn4j/zNb","8%@N2*2#-#f","iBV6f*vacWI","pglh37hi&ZH","mqMFDg-jn6L","FK^b66Ubl0p","NDf-U*ibp0f","HAol@+^e0^1","7pXnHjczC8L","1UQQSF$9l98","qmcepha*GWi","xlOUf0g$#t-","yM+66P9Qx&k","XKe37oeXaed","W@X6*-XZ8XG","2^EthdRP83u","c5jLlSU-/#I","Evt!FF5!%yd","4Mx*Lc1I^0P","3oPo$9kcF5f","yCgEbFz1Yck","Q4-FQcxHD7S","-ZzqUOP8c&d","qZA$7Alu3PI","F8YOV^u^9x&","T6Juij^XFZa","A&G7CXNXtIX","*el@DMo!x9x","x#GnZ2RT1j5","4yRp*H-a#+1","h$qrCQqEujK","#*@FY@@*L#Y","X$coA62bXKX","cr^/Un0WTSq","v*^T*ioZ1hv","dC%JI%gR+gw","gj4oM$%!+iu","6%gWUrz1&+m","oP1VwD*^LuV","Q5hg&vlSZiE","4PB4d*kR*5m","uyAmCeoV0S#","AYDo6L*BYSt","PDXrj*x9*uk","4^wr4!HPiCI","^aUD^rrwgWz","^CqPjPwS^vr","GwAZ@08bdE^","*UATNqbwV+#","SA%hqIk-6N7","7OXK-q!y3kb","0oyCA1mQF9u","8nemqR2M3rT","E5ziu^e87NX","&Pc8$+*hQDi","RRP^cV&k^F/","Je5qsKisI-t","3creqKQg0Uz","27nE@$1QOj%","8-wY%I12xfI","uy/MS5UG^Vy","!cvlllv6/qM","z2yvEnSMRiC","rrM^a%VT1wK"],
-  "12-mixed":["78Jyx9AUJ^zP","J9h6%cIUsxBG","G3n@ciJXVclD","BR#wSB-H3nfL","HH6-6tGdE*s^","M5wpgjhCIU1m","oy0-OGWw6Sq@","BIcMoi&2V^LY","XYr3iH*Tk#3M","IAV05+VoU@rc","A9WzjjS2ZW!1","ecW1%CRP0co%","xtDLnfC3tsLM","2W^f-gIJ78W#","#IAZr!!ATE6!","kt1UGJDwDqO0","Za-B#Ed5zzmt","SJn*5z2a$IfM","Pnr8A@HljAOL","CXn^QGRfpo0z","^8Y!EZGaRl*E","qF^5%#KbwIQe","MZq2k-ue6a5r","ojMGooY&zB4&","XXZ$BRc@P5Mm","fR0u0@cU^g5c","UJbaLOLSTIHI","^%@^e#z59TX&","EWThA%DIMK6J","10hY*FOrY+B7","^eCndc*@IdX7","p/yYq$wD!uOS","t*T4bdykaLmG","#-+cJ-r19vZG","Tl8oXvZh%wuw","SFwURT*vHw/Z","!9FUZ6Apr9+2","iC$8f3WL#8B#","Lq$N0WVk@svz","--%RrA%lLZim","SnV8vFHbRbqO","c3USpxh9q*^T","2e%HbHz&H-^J","xD!vc2L@jr*Q","gtk2qQQ3erV-","y&bnAy78hBcs","yht*xL3f4$yd","x5p$2HMLmeuQ","&6yzItZ9NUZI","&8K^^Jw^mih8","yxMO!uuz/t$1","*mTP7D8^59dp","Nu8oFkIay*3#","BqZIlPX-eDQi","J$Zg/utLG%cS","5v@@Y+HRy#Q4","+D%WXbD41%ki","t%wNCV@z@6^s","KF3I*9Q4l6yu","z8V1+s^pj7mF","VVBXb8Qx#Ti6","qSsehT%v4REu","3-Cl^Sc9e%tq","baRKR2FyMR^i","sAil1@xWsoi5","rQT!FqnoZUMj","XzC9$7ITv7G9","7K^Y**PA+VtR","Ypvw!p/9&9ap","1nA9J^FX1knw","0qx2tY-SoPhs","FsrdWWs2rptA","MTnIDXfHQ*Ye","rm^kF%E6/P$7","Uu^75q7#C^V5","uW6%x@4BbAXL","reg6u$Dk*7ZK","Y9JZyyfnul9p","BRZ5^z2jRxqK","pkHlyUd0v!!!","0xzlo6^rdmca","E@NG/gtC2wg9","l/bYykk5#&#d","B#eryZvF6k^B","a2N7zN/$M9oc","g77NPE8m+fBs","kiltN!*Hv*ZI","cG#VMYxtL@cZ","nUEThr#zLK!T","Z2-angxvVb25","*FhWZc*Hd^rf","*6Ap!ynXrb%j","lSz!3rHF+d6C","Cs3oySKr4VXt","#Z3qADqEQj0x","jsw*CUlH@^^P","5DNU7Z6+*QLl","+jV5ARn&y0Ld","dHt1!5$5Lp#4","+Yg1xV5r4&On"],
-  "13-mixed":["JnGTjK3fsNQ+g","^p-JhMs^6s7Ph","j1wcW^eZnxyU#","wCKEg8JAv#cSc","WcwnCu5QDslHE","GXjL++9&0Xi@C","EjJwyx9*v8yJV","zy2^um*n%l^li","F5hpVaRgr8VkX","zJVRM^Rgf2BSB","aGlxu+MKDFC63","g278eZ#^e%cv/","LsmP5r686YL8y","1w+pw#F7B1U*G","VmXI*h^T4b4aS","s$@@q^FA0g*Ei","INsdDjxSMPyYG","PD/R6hZUxt7jf","uPGH%HdFY+%0z","Yc^5Ic3DOK2P9","yAnL*#8RjvLh-","T@@WQ7YTQgqfF","vYYBE^q*e2y%l","ivw$f2zZ$y9pb","2dN20El^PBX*h","9RC&sF5Bc-pW%","$R-s#g3zGIkp9","6l#xilphuk^Hv","mUOs*evqkJ*3f","$4uVzWCcokqzx","WUdVMdsu*BT^I","!-u+Bw002UegF","g@-E^nhWTZp96","j0uBvit1m*^hm","R^&LG&CcebUUi","R@Al%vC%c5Kt0","7VtL0SzW6^n^r","BH*aFm6D5!pTc","FUZNBd@KH7yto","v&a9OKuN^f6AD","lEYqr**^m%2i4","cvS9%EGr&Gzd3","uSRP4fRSRIqfT","*cXCn+ld6Dmek","Qr7U^Ge-LQL@y","KHK%6*LQa*RDy","@j8jBCroW7D/P","XEkFQ0Dq15mt/","oeg*M19GR%RoV","-mdmK3Gi!6^A3","^*KM9YS6HYXKN","6-#g&EbTz*p0p","msy0ShAXT#-MF","Eon1IE!u26Y4q","AQnCnT^ZwcjJJ","W^5Bf1@8/PSum","*1^@qySnvhhVD","ullKB^VVrkG@/","45GRKvseEBU#S","rwmLn5AfqSopR","UTzePfr44*6ft","D+GkESLzZCB/^","Zwg6/9Na$pHZH","U2tbd7SQpyR1r","L0xU/^w1@Cre6","giwiWFisU^cQt","nH*x@9h2p88Bv","3$kMFxAuy4COc","#D#65R0E!NlVE","kRVb$QBBtR0Tm","Y*Fcpm2yP*Ybe","q-6^Ofh8$0XPZ","*aO9Qwq3LZ!fl","EHzNYWoLUOX@/","tL4&f*NlEsYZ-","I^me39un3Edqc","Nd0uGjz0b83Ol","DI^hOqgO$gwkf","#0Jtb5wI@sihc","aWjfJmZln!9vs","/Rnr-bIUV/6AN","WnjczTzVm%iuZ","kU+Tn6zo@N!^Y","qb+IdNQz6TyP&","gNByY/jGIbBLv","sqwe-84Qj&nX!","ZYmZBaQEbwLqX","gz^^/!y@0dyrw","Ui0r#S-3i3HN-","6qyWWBrKzajfI","EFQh/v7ijK0mU","TTmJ1wYhC^y6V","O3i9Kc/k4rQp3","$3d+BUOUW9h7-","bB*^D1sg9OyBV","Exsok^^U+*sEo","Pnd*ao&4FyyYp","o$1MA6UE^hrCH","c*06tzipxI4E+","Oh+IQaN+i*KT5"],
-  "14-mixed":["YwZaB8SRQI^FZh","6h-lPoPp*q0nic","^rfw-AJcSA8Dio","8A37hfDKMw5CxQ","QzN6RD3SL*N4*B","ez+d+Y^WaGGrEY","diGlRgG#O5ZqI*","-ixMOXk+xHIVv5","%zzjBIK97YYp9j","slHxvIKJA$kzxE","pD!f!VZ-F@6Yu6","vW^*lJ7grMcg@@","rPEU&4j7b0TEWc","8P+FBtppbga563","eqzVPQ3I^^UgAe","B^*Hwfg63#8mWK","%9ESUXb^R650mE","3p6$Ht12--%!%Q","tNktZBO@7GA@t4","^T2-2p2@8k*7Kw","cJ@AiQf00zabvH","f*-kC#0Fu4RAKL","^NrdL*-zMAAj^O","HW&SXT5!/pn2Jr","XNo$L*QlSFGxeR","J$$%*rsQ*6pCmq","6Ul8lYvQ-C4vq+","lSkAqakNleEsSL","BhD1%SZCm#O2GU","e&iN2k8ed5KK4v","KcwZE^sfcz$CVz","9HO2$5yAL2BLz*","L1Qh*2XMR&+#NK","&UR0oi6rl^82JG","D@@^%SqWVrOkt5","Mk7BjprggC2By#","TtL@-+$15-+/b1","VIKFB3Q9RPiJ7y","+9q2spyU-C&a*F","NLHifz%iSJCTs^","beh+ABQ+Glf0of","x+0#@wuRdCkC-T","9*M@h7$NgAEHxw","Bd3uL6VUTe$-8w","y6p!IWW+E**/1Q","+$+kN!yC+RifqT","-M6U6-5+B8A+EI","U6JQdXweBt9**6","HGl8tUcXgjf/YA","XWEn3TK$XLFoyx","b7o+0^i9$7#y0g","8JoT$*sYA/q0p*","5GW0RNtXd5@xQe","$^jAGnon7lQlj@","GM4e0yhI6d$o!Y","^SxZ#jY6#ZCLjz","p05aht8w5v*A6&","-Odhm*E*CsC@m+","6C8jKDA*C$h6Eo","th-EPU@xVs3lK&","^x^@gYz6Esm-yR","SacBdJ8Z^%Hp9A","%3f7YqmVz2fZt%","q7$eWH!^N6EClu","Feuliv6mLzX3K-","0mPa2&o9oTYEL0","I6V^XNDvF+Y+3a","C5$fJw*6qsfXDU","q-+IZ*!slRren@","^m2nhP33$hNrkI","rmdD9l7oXM$Bob","sq8*ULEpD^J*$Y","tJy%^hr-z+OA2g","blRZqnpL2lvq5I","hdqMRXoo4IEaFR","$cbQqK$E+kI&v#","MM*nBtex6%LltX","Z4krrUW/c%A2r-","$8+c^qjoeL2wk&","S!i*y1^3HrbagN","s-3wq40riv0BPx","BN^zlU9oA*U*7!","6R^D&!V-7CF*m3","IOc17gD9n9gzdr","hiwm^8MF^BPrt^","BW*kRPAqYQzMWV","0M-AaNnf^^lkDw","YotoyZvA0YKz4L","!@WQ9qLXM0vQ&E","WLOJl9J%cze9/5","9ujgXjLo+vIKP&","lKmVzARX5b2DT^","^077AG6NIBEqD4","V9Oh5e3yR6Tdy3","Mi8C4$uy#*H-35","Ycfw6EHK6W&v*R","cLLLyrQ77m@nJB","2mhyhy11h6O*&n","sRt#TQFzMP3KJr","tC9R4/Bz6*S$9G"],
-  "15-mixed":["cUwt+k/MSImDz!6","5IaY%3tOQLAfDlg","SPoJxHJN1le/9$+","EcthjlA*^z+p0kC","cXRD-3GPeCp7UF0","Ol2GtbX5QUz*c5J","$iV^$#Evan4*cyi","JrNf@w9Dynf0MKT","Dj8*a9uoX*sc*BQ","y+UTe9&FqD%@LJW","1HtQDH9$Gd0Qmed","&fQG$LpQyCt%3tz","oeXh+HwL^IZahMj","XH2%XG5ozBNI*Bp","ifBMVTwAR%ahTkV","HB@xBSWQOKnMs*7","DoRCDA@y46fqRR^","lhna6xXOs%irzgX","OemJP7X88hVonTu","JwHu/GFbR0T-6HE","^2iOv3^I*dEY/^4","QveFDu6+^kHAQG-","TcH^cH*JlpF#qg3","brHIZi*!dE-C41q","w01#lpi1XC9gp@7","lDAO*@d34PC1XAA","pxB*IsVWx$bLJ^K","$G&DiB*8^/Pi+wI","HTR3mVAeSIx-G6N","l#BeP*4%h5S7ojX","e&iLXBAtp6ZF$h&","8D&6@kQmh$/Poqk","cR#ljkaTT!i+kHv","%Wf68wJLYc1*rk8","I-ruKB*7eKdBKBg","HXLX3SfAFwijBKS","o2+j-FSMjEPyZ^X","a/5Y2pMoa1KgTBy","84N+pR*1PhtIVF+","nyEhR5UtG1ImrRq","O2BK@@OdBN74pxt","gtv4mOq&!MfB4Hp","MbOWTPwZ9GUrCo!","zYYQyRbL%tBXXri","2y$LQ-i3zTb+p3B","jyRAP*xayPPtr@x","!ceW@^@D+%5FxDr","JcGXKN#Hu0tD7hx","mufPARUV!QltLrv","3g/kgAi6zfhaurt","RewD0d^z@-FlLtf","@$losh/QwId5@Fl","w!l7RWnc3@ej%DE","jCrOWt@52jAPeWe","j6DsxXp3#H4WRz!","T2$08EHH@hp2/ch","Jghvutilo-5RxLt","qFIXGMUb@xYep03","8$5U-8z1@7qt6X!","4iFy#Y!^9bC*c&Z","&EqmIUG$&xIBE7M","unMckiNP+^w18#2","NkoEEm6P%q-nS0K","mA7ZONMXbo-yIS*","9/N#N$h5d11%*uO","107&CQ+2*GjjyOz","*gRAwq*q9f9F1!8","ApOxZ^yvD#ZMaX4","ihxCanbibczxVgD","6LKhr8oy&*6*s#B","z34KOg^dGSUhD5c","V2eeFr2i%@9T+1i","ua@WH1H+!Av$@Vg","YbqIa6&T3*8YVNT","WpFTI6b!Sv^9eg2","fb%+G%Fb6+4/gAO","0wqVsk3MBD!E5X+","U42UwSdz^YD^UfT","JJvvZf&a#zJms^W","OM*68*!%Sb8QUVs","sS4v^t44WrN&nMy","z@d/b8EUJLA#JRz","53l^cmWS1x+K2@l","X$3ZV&-#rfSLUJo","rS21lQ&eiRzWBd0","z0s50mj&8I9AxSF","@OH&9+mu@fgq5Qh","6fJ-lHVY86v/LfI","U8vTIaLuggWkqZU","6sXnG!CLWKm^egL","E^Y1WW2tt6&Cfn1","a3jnvK^^FZPyiGe","it**KA2u1DLcu4t","g%x*IM9eH#uJHY&","#Zx2LEHSbonJ3W#","XEmCwi4gmw!pdj7","5-v%^dZoJ@xBDHw","NXYpxF%*/1$Wz^j","3C^/RD4Y/-UkEGZ","Yc-^CQZQTw$z*^^"]
-}
-</script>
+  const firebaseConfig = {
+    apiKey: "AIzaSyBdTht0Qu-J_SJSzotwM6fMYR4PAFVj63s",
+    authDomain: "mind-training-f1b2b.firebaseapp.com",
+    projectId: "mind-training-f1b2b",
+    storageBucket: "mind-training-f1b2b.firebasestorage.app",
+    messagingSenderId: "1021385760984",
+    appId: "1:1021385760984:web:154f647b1fc90c34fef7ad",
+    measurementId: "G-CVNPF4YL6B"
+  };
 
-<script>
-const data = JSON.parse(document.getElementById("numberData").textContent);
-const container = document.getElementById("setsContainer");
+  const app = initializeApp(firebaseConfig);
+  const db = getFirestore(app);
 
-let total = 0;
-for (let key in data) total += data[key].length;
+  const DOC_ID = "memory_practice_mixed_dynamic";
+  const docRef = doc(db, "memory_practice", DOC_ID);
 
-// Load saved state from localStorage
-let savedState = JSON.parse(localStorage.getItem("completedState") || "{}");
+  const container = document.getElementById("setsContainer");
+  const statusIndicator = document.getElementById("statusIndicator");
+  const globalCounter = document.getElementById("globalCounter");
+  const inputCount = document.getElementById("itemCount");
+  const speakSpeedInput = document.getElementById("speakSpeed");
 
-function renderSets() {
-  for (let set in data) {
-    const div = document.createElement("div");
-    div.className = "set";
+  const audioState = {}; 
 
-    const title = document.createElement("h2");
-    title.textContent = set + " combinations";
+  const symbolMap = {
+    '!': 'Exclamation', '@': 'At', '#': 'Hash', '$': 'Dollar',
+    '%': 'Percent', '^': 'Caret', '&': 'Ampersand', '*': 'Asterisk',
+    '(': 'Open Paren', ')': 'Close Paren', '-': 'Dash', '_': 'Underscore',
+    '+': 'Plus', '=': 'Equals', '{': 'Open Brace', '}': 'Close Brace',
+    '[': 'Open Bracket', ']': 'Close Bracket', '|': 'Pipe', '\\': 'Backslash',
+    ':': 'Colon', ';': 'Semicolon', '"': 'Quote', '\'': 'Apostrophe',
+    '<': 'Less Than', '>': 'Greater Than', ',': 'Comma', '.': 'Dot',
+    '?': 'Question', '/': 'Slash'
+  };
 
-    const counterWrap = document.createElement("div");
-    counterWrap.style.display = "flex";
-    counterWrap.style.alignItems = "center";
-    counterWrap.style.gap = "10px";
+  function speakText(text) {
+    const chars = text.split('');
+    const spokenWords = chars.map(char => {
+      if (symbolMap[char]) return symbolMap[char];
+      return char; 
+    });
+    const utteranceText = spokenWords.join(', ');
 
-    const counter = document.createElement("div");
-    counter.className = "counter";
-    counter.id = set + "-counter";
-    counter.textContent = `Completed: 0 / ${data[set].length}`;
+    if ('speechSynthesis' in window) {
+      window.speechSynthesis.cancel();
+      const utterance = new SpeechSynthesisUtterance(utteranceText);
+      utterance.rate = parseFloat(speakSpeedInput.value);
+      utterance.pitch = 1;
+      window.speechSynthesis.speak(utterance);
+    }
+  }
 
-    const setResetBtn = document.createElement("button");
-    setResetBtn.textContent = "Reset";
-    setResetBtn.style.padding = "2px 8px";
-    setResetBtn.addEventListener("click", () => resetSet(div, set));
+  function generateMixedString(length) {
+    const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*-_+/";
+    let result = "";
+    for(let i=0; i<length; i++) {
+      result += chars.charAt(Math.floor(Math.random() * chars.length));
+    }
+    return result;
+  }
 
-    counterWrap.appendChild(counter);
-    counterWrap.appendChild(setResetBtn);
-
-    const ul = document.createElement("ul");
-    data[set].forEach(num => {
-      const li = document.createElement("li");
-      li.textContent = num;
-
-      // restore highlight if it was saved
-      if (savedState[set] && savedState[set].includes(num)) {
-        li.classList.add("completed");
+  function generateNewDataset(count) {
+    const categories = [
+      "6-mixed", "7-mixed", "8-mixed", "9-mixed", "10-mixed",
+      "11-mixed", "12-mixed", "13-mixed", "14-mixed", "15-mixed"
+    ];
+    
+    const newDataset = {};
+    categories.forEach(cat => {
+      const len = parseInt(cat.split('-')[0]);
+      const list = [];
+      for(let i=0; i<count; i++) {
+        list.push(generateMixedString(len));
       }
-
-      li.addEventListener("click", () => toggleHighlight(li, set));
-      ul.appendChild(li);
+      newDataset[cat] = list;
     });
 
-    div.appendChild(title);
-    div.appendChild(counterWrap);
-    div.appendChild(ul);
-    container.appendChild(div);
+    return { dataset: newDataset, completed: {} };
   }
-  updateCounters();
-}
-renderSets();
 
-function toggleHighlight(li, set) {
-  li.classList.toggle("completed");
-  saveState();
-  updateCounters();
-}
+  let currentData = null;
 
-function updateCounters() {
-  let totalDone = 0;
-
-  document.querySelectorAll(".set").forEach(div => {
-    const counter = div.querySelector(".counter");
-    const lis = div.querySelectorAll("li");
-    let doneSet = 0;
-
-    lis.forEach(li => {
-      if (li.classList.contains("completed")) doneSet++;
-    });
-
-    counter.textContent = `Completed: ${doneSet} / ${lis.length}`;
-    totalDone += doneSet;
+  onSnapshot(docRef, (docSnap) => {
+    if (docSnap.exists()) {
+      statusIndicator.textContent = "Synced with cloud";
+      statusIndicator.style.color = "#16a34a";
+      
+      const fullData = docSnap.data();
+      currentData = fullData.dataset;
+      
+      if (currentData && currentData['6-mixed']) {
+        const actualCount = currentData['6-mixed'].length;
+        if (actualCount > 0) inputCount.value = actualCount;
+      }
+      
+      renderAll(fullData.dataset, fullData.completed || {});
+    } else {
+      statusIndicator.textContent = "Initializing database...";
+      const initialData = generateNewDataset(50);
+      setDoc(docRef, initialData);
+    }
+  }, (error) => {
+    console.error("Firebase Error:", error);
+    statusIndicator.textContent = "Error connecting to cloud.";
+    statusIndicator.style.color = "#dc2626";
   });
 
-  document.getElementById("globalCounter").textContent =
-    `Completed: ${totalDone} / ${total}`;
-}
+  function renderAll(dataset, completedMap) {
+    container.innerHTML = "";
+    let totalItems = 0;
+    let totalDone = 0;
 
-function resetAll() {
-  document.querySelectorAll("li").forEach(li => li.classList.remove("completed"));
-  savedState = {};
-  localStorage.removeItem("completedState");
-  updateCounters();
-}
+    const order = [
+      "6-mixed", "7-mixed", "8-mixed", "9-mixed", "10-mixed",
+      "11-mixed", "12-mixed", "13-mixed", "14-mixed", "15-mixed"
+    ];
 
-function resetSet(div, set) {
-  div.querySelectorAll("li").forEach(li => li.classList.remove("completed"));
-  delete savedState[set];
-  localStorage.setItem("completedState", JSON.stringify(savedState));
-  updateCounters();
-}
+    order.forEach(setKey => {
+      const items = dataset[setKey];
+      if (!items) return;
 
-function saveState() {
-  savedState = {};
-  document.querySelectorAll(".set").forEach(div => {
-    const title = div.querySelector("h2").textContent.split(" ")[0]; // e.g. "2-digit"
-    savedState[title] = [];
-    div.querySelectorAll("li.completed").forEach(li => {
-      savedState[title].push(li.textContent);
+      totalItems += items.length;
+      let sectionDone = 0;
+
+      const div = document.createElement("div");
+      div.className = "set";
+      div.id = `section-${setKey}`;
+
+      const title = document.createElement("h2");
+      
+      const btnAudio = document.createElement("button");
+      btnAudio.className = "btn-audio-toggle";
+      const isAudioOn = audioState[setKey] === true;
+      
+      if (isAudioOn) {
+        btnAudio.classList.add("active");
+        btnAudio.innerHTML = "🔊 On";
+      } else {
+        btnAudio.innerHTML = "🔇 Off";
+      }
+      
+      btnAudio.onclick = () => {
+        audioState[setKey] = !audioState[setKey];
+        if (audioState[setKey]) {
+          btnAudio.classList.add("active");
+          btnAudio.innerHTML = "🔊 On";
+        } else {
+          btnAudio.classList.remove("active");
+          btnAudio.innerHTML = "🔇 Off";
+        }
+      };
+
+      const btnReset = document.createElement("button");
+      btnReset.className = "btn-set-reset";
+      btnReset.textContent = "Reset";
+      btnReset.onclick = () => resetSection(setKey, items.length);
+
+      const counterDiv = document.createElement("div");
+      counterDiv.className = "counter";
+      
+      title.innerHTML = "";
+      const textSpan = document.createElement("span");
+      textSpan.textContent = `${setKey} `;
+      title.appendChild(textSpan);
+      title.appendChild(counterDiv);
+      title.appendChild(btnAudio);
+      title.appendChild(btnReset);
+
+      const ul = document.createElement("ul");
+      
+      items.forEach((val, index) => {
+        const li = document.createElement("li");
+        li.textContent = val;
+        const uid = `${setKey}-${index}`;
+
+        if (completedMap[uid]) {
+          li.classList.add("completed");
+          sectionDone++;
+        }
+
+        li.addEventListener("click", () => {
+          if (audioState[setKey]) {
+            speakText(val);
+          }
+          toggleItem(uid, li);
+        });
+        
+        ul.appendChild(li);
+      });
+
+      totalDone += sectionDone;
+      counterDiv.textContent = `${sectionDone} / ${items.length}`;
+
+      div.appendChild(title);
+      div.appendChild(ul);
+      container.appendChild(div);
     });
-  });
-  localStorage.setItem("completedState", JSON.stringify(savedState));
-}
 
-function copyAll() {
-  let text = "";
-  for (let set in data) {
-    text += set + ":\n" + data[set].join(" ") + "\n\n";
+    globalCounter.textContent = `Total Completed: ${totalDone} / ${totalItems}`;
   }
-  navigator.clipboard.writeText(text);
-  alert("Copied all numbers to clipboard!");
-}
 
-function downloadTxt() {
-  let text = "";
-  for (let set in data) {
-    text += set + ":\n" + data[set].join(" ") + "\n\n";
+  async function toggleItem(uid, li) {
+    const isNowComplete = !li.classList.contains("completed");
+    if(isNowComplete) li.classList.add("completed");
+    else li.classList.remove("completed");
+
+    await updateDoc(docRef, {
+      [`completed.${uid}`]: isNowComplete
+    });
   }
-  const blob = new Blob([text], {type: "text/plain"});
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement("a");
-  a.href = url;
-  a.download = "number_sets.txt";
-  a.click();
-  URL.revokeObjectURL(url);
-}
+
+  async function resetSection(setKey, count) {
+    if(!confirm(`Reset ${setKey}?`)) return;
+    const updates = {};
+    for(let i=0; i<count; i++) {
+      updates[`completed.${setKey}-${i}`] = false;
+    }
+    await updateDoc(docRef, updates);
+  }
+
+  async function resetAllProgress() {
+    if(!confirm("Reset ALL progress? Items will stay the same.")) return;
+    await updateDoc(docRef, { completed: {} });
+  }
+
+  async function regenerateAll() {
+    const count = parseInt(inputCount.value) || 50;
+    if(!confirm(`WARNING: This will generate NEW mixed strings (${count} per section) and WIPE progress.`)) return;
+    
+    statusIndicator.textContent = "Regenerating...";
+    const newData = generateNewDataset(count);
+    await setDoc(docRef, newData);
+  }
+
+  window.copyAll = function() {
+    if(!currentData) return;
+    let text = "";
+    const order = ["6-mixed", "7-mixed", "8-mixed", "9-mixed", "10-mixed", "11-mixed", "12-mixed", "13-mixed", "14-mixed", "15-mixed"];
+    order.forEach(key => {
+      if(currentData[key]) {
+        text += key + ":\n" + currentData[key].join(" ") + "\n\n";
+      }
+    });
+    navigator.clipboard.writeText(text);
+    alert("Copied to clipboard!");
+  }
+
+  window.downloadTxt = function() {
+    if(!currentData) return;
+    let text = "";
+    const order = ["6-mixed", "7-mixed", "8-mixed", "9-mixed", "10-mixed", "11-mixed", "12-mixed", "13-mixed", "14-mixed", "15-mixed"];
+    order.forEach(key => {
+      if(currentData[key]) {
+        text += key + ":\n" + currentData[key].join(" ") + "\n\n";
+      }
+    });
+    const blob = new Blob([text], {type: "text/plain"});
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "mixed_sets.txt";
+    a.click();
+    URL.revokeObjectURL(url);
+  }
+
+  document.getElementById('btn-reset').addEventListener('click', resetAllProgress);
+  document.getElementById('btn-regen').addEventListener('click', regenerateAll);
+  document.getElementById('btn-copy').addEventListener('click', window.copyAll);
+  document.getElementById('btn-download').addEventListener('click', window.downloadTxt);
+
 </script>
 
 </body>
