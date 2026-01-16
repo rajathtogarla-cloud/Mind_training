@@ -3,53 +3,141 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Cloud Math Practice</title>
+  <title>Cloud Math Practice (Fixed Digits)</title>
   <style>
+    /* --- THEME VARIABLES --- */
+    :root {
+      /* Dark Mode (Default) */
+      --bg-body: #000000;
+      --text-main: #ffffff;
+      --text-dim: #757575;
+      --bg-card: #111111;
+      --border-card: #333;
+      
+      --accent-title: #00e676;
+      --accent-section: #ffd600;
+      --accent-answer: #90caf9;
+      
+      --input-bg: #222;
+      --input-border: #444;
+      
+      --btn-bg: #222;
+      --btn-hover: #333;
+      --btn-border: #444;
+      
+      --regen-color: #ff8a80;
+      --regen-border: #b71c1c;
+      --regen-hover: #3e2723;
+      
+      --refresh-color: #00e676;
+      --refresh-border: #1b5e20;
+    }
+
+    body.light-mode {
+      --bg-body: #f5f5f5;
+      --text-main: #212121;
+      --text-dim: #616161;
+      --bg-card: #ffffff;
+      --border-card: #e0e0e0;
+      
+      --accent-title: #2e7d32;
+      --accent-section: #f57f17;
+      --accent-answer: #1565c0;
+      
+      --input-bg: #ffffff;
+      --input-border: #bdbdbd;
+      
+      --btn-bg: #f5f5f5;
+      --btn-hover: #e0e0e0;
+      --btn-border: #bdbdbd;
+      
+      --regen-color: #d32f2f;
+      --regen-border: #e57373;
+      --regen-hover: #ffebee;
+      
+      --refresh-color: #2e7d32;
+      --refresh-border: #a5d6a7;
+    }
+
     body {
-      background-color: #121212;
-      color: #ffffff;
+      background-color: var(--bg-body);
+      color: var(--text-main);
       font-family: Arial, sans-serif;
       padding: 20px;
+      transition: background 0.3s, color 0.3s;
     }
     h1 {
       text-align: center;
-      color: #00e676;
+      color: var(--accent-title);
     }
     .status-indicator {
       text-align: center;
       font-size: 0.8em;
-      color: #757575;
+      color: var(--text-dim);
       margin-bottom: 10px;
     }
     .section {
       margin-top: 30px;
+      padding: 10px;
+      border-radius: 8px;
+      background: var(--bg-card); /* Slight background for sections */
+      border: 1px solid transparent;
+    }
+    
+    /* Section Header Layout */
+    .section-header {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 15px;
+      margin-bottom: 15px;
+      border-bottom: 1px solid var(--border-card);
+      padding-bottom: 10px;
     }
     .section h2 {
-      color: #ffd600;
+      color: var(--accent-section);
+      margin: 0;
+      margin-right: auto; /* Pushes controls to the right */
+      font-size: 1.4em;
+    }
+    
+    /* Controls inside section header */
+    .section-controls {
       display: flex;
       align-items: center;
+      gap: 8px;
+      font-size: 0.9em;
+    }
+
+    .problem-list {
+      display: block;
     }
     .problem {
       margin: 8px 0;
       cursor: pointer;
       user-select: none;
+      padding: 8px;
+      border-radius: 4px;
+      transition: background 0.1s;
+      font-size: 1.1em;
+    }
+    .problem:hover {
+      background-color: rgba(128, 128, 128, 0.1);
     }
     .answer {
       opacity: 0;
       display: none;
-      color: #90caf9;
+      color: var(--accent-answer);
       margin-left: 20px;
+      font-weight: bold;
       transition: opacity 0.2s;
     }
     .answer.visible {
       display: inline;
       opacity: 1;
     }
-    .problem:hover {
-      text-decoration: underline;
-    }
 
-    /* --- Controls & Input Styles --- */
+    /* --- Global Controls --- */
     .controls {
       display: flex;
       flex-wrap: wrap;
@@ -58,7 +146,8 @@
       align-items: center;
       margin-bottom: 20px;
       padding: 15px;
-      background-color: #1e1e1e;
+      background-color: var(--bg-card);
+      border: 1px solid var(--border-card);
       border-radius: 8px;
     }
     .control-group {
@@ -66,45 +155,57 @@
       align-items: center;
       gap: 8px;
     }
+    label { font-size: 0.9em; }
+    
     input[type="number"] {
-      background-color: #333;
-      border: 1px solid #555;
-      color: #fff;
-      padding: 5px;
+      background-color: var(--input-bg);
+      border: 1px solid var(--input-border);
+      color: var(--text-main);
+      padding: 6px;
       border-radius: 4px;
-      width: 60px;
+      width: 50px;
       text-align: center;
+      font-weight: bold;
     }
+    
     .btn-clear {
-      background-color: #333;
-      color: #fff;
-      border: 1px solid #555;
+      background-color: var(--btn-bg);
+      color: var(--text-main);
+      border: 1px solid var(--btn-border);
       padding: 8px 16px;
       cursor: pointer;
       border-radius: 4px;
       font-size: 0.9em;
       transition: background 0.2s;
     }
-    .btn-clear:hover {
-      background-color: #555;
-    }
-    .btn-clear:active {
-      background-color: #222;
-    }
+    .btn-clear:hover { background-color: var(--btn-hover); }
+    
     .btn-regen {
-      border-color: #b71c1c; 
-      color: #ff8a80;
+      border-color: var(--regen-border); 
+      color: var(--regen-color);
     }
-    .btn-regen:hover {
-      background-color: #3e2723;
+    .btn-regen:hover { background-color: var(--regen-hover); }
+    
+    .btn-theme {
+      font-size: 1.2em;
+      padding: 4px 10px;
+      line-height: 1;
     }
-    .section-btn {
-      margin-left: 15px;
-      font-size: 0.6em;
-      padding: 4px 8px;
-      vertical-align: middle;
-      background-color: #2c2c2c;
-      border-color: #444;
+
+    /* Smaller buttons for section headers */
+    .btn-section-small {
+      padding: 5px 10px;
+      font-size: 0.85em;
+    }
+    
+    /* Specific style for the Refresh button */
+    .btn-refresh {
+      color: var(--refresh-color);
+      border-color: var(--refresh-border);
+      font-weight: bold;
+    }
+    .btn-refresh:hover {
+      background-color: rgba(0, 230, 118, 0.1);
     }
   </style>
 </head>
@@ -116,21 +217,15 @@
     <button class="btn-clear" id="globalClearBtn">Clear All Answers</button>
     
     <div class="control-group">
-      <label for="probCount">Count per section:</label>
+      <label for="probCount">Count:</label>
       <input type="number" id="probCount" value="20" min="1" max="200">
-      <button class="btn-clear btn-regen" id="regenerateBtn">Regenerate Problems</button>
+      <button class="btn-clear btn-regen" id="regenerateBtn">Regenerate All</button>
+      <button class="btn-clear btn-theme" id="themeBtn" title="Toggle Theme">🌗</button>
     </div>
   </div>
 
   <div id="app-container">
-    <div class="section" id="addition"><h2>Addition</h2>Loading...</div>
-    <div class="section" id="subtraction"><h2>Subtraction</h2>Loading...</div>
-    <div class="section" id="multiplication"><h2>Multiplication</h2>Loading...</div>
-    <div class="section" id="division"><h2>Division</h2>Loading...</div>
-    <div class="section" id="mixed"><h2>Mixed Operations</h2>Loading...</div>
-    <div class="section" id="double-nested"><h2>Double Nested Operations</h2>Loading...</div>
-    <div class="section" id="complex-double"><h2>Complex Double Expressions</h2>Loading...</div>
-  </div>
+    </div>
 
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
@@ -157,8 +252,59 @@
     const analytics = getAnalytics(app);
     const db = getFirestore(app);
 
-    const DOC_ID = "math_sheet_v1"; 
+    const DOC_ID = "math_sheet_v2_digits"; 
     const docRef = doc(db, "math_practice", DOC_ID);
+
+    // --- THEME LOGIC ---
+    const themeBtn = document.getElementById('themeBtn');
+    if (localStorage.getItem('mathTheme') === 'light') {
+      document.body.classList.add('light-mode');
+    }
+    themeBtn.addEventListener('click', () => {
+      document.body.classList.toggle('light-mode');
+      const isLight = document.body.classList.contains('light-mode');
+      localStorage.setItem('mathTheme', isLight ? 'light' : 'dark');
+    });
+
+    // --- SETUP SECTION DOM (STATIC SHELL) ---
+    // We create this once so we don't overwrite inputs when data updates
+    const operations = ['addition', 'subtraction', 'multiplication', 'division', 'mixed', 'double-nested', 'complex-double'];
+    const appContainer = document.getElementById('app-container');
+    const savedDigits = JSON.parse(localStorage.getItem('mathDigits') || '{}');
+
+    operations.forEach(op => {
+      const section = document.createElement('div');
+      section.className = 'section';
+      section.id = op;
+
+      const title = op.replace(/-/g, ' ').replace(/\b\w/g, char => char.toUpperCase());
+      const defaultDigits = savedDigits[op] || 2;
+
+      // Note the new REFRESH button (⟳)
+      section.innerHTML = `
+        <div class="section-header">
+          <h2>${title}</h2>
+          <div class="section-controls">
+            <label>Digits: <input type="number" id="digits-${op}" value="${defaultDigits}" min="1" max="6"></label>
+            <button class="btn-clear btn-section-small btn-refresh" id="btn-refresh-${op}" title="Apply Digit Change">⟳ Go</button>
+            <button class="btn-clear btn-section-small" id="btn-clear-${op}">Clear</button>
+          </div>
+        </div>
+        <div class="problem-list" id="list-${op}">Loading...</div>
+      `;
+      appContainer.appendChild(section);
+      
+      // Save preferences on change
+      section.querySelector(`#digits-${op}`).addEventListener('change', (e) => {
+        savedDigits[op] = parseInt(e.target.value);
+        localStorage.setItem('mathDigits', JSON.stringify(savedDigits));
+      });
+
+      // Bind the Refresh button specifically for this section
+      section.querySelector(`#btn-refresh-${op}`).addEventListener('click', () => {
+         regenerateSection(op);
+      });
+    });
 
     // --- MATH LOGIC ---
 
@@ -166,12 +312,19 @@
         return Math.floor(Math.random() * (max - min + 1)) + min;
     }
 
-    function generateProblemsForOp(operation, count) {
+    function generateRandomNumber(digits) {
+      const min = Math.pow(10, digits - 1);
+      const max = Math.pow(10, digits) - 1;
+      return randomInt(min, max);
+    }
+
+    function generateProblemsForOp(operation, count, digits) {
       const problems = [];
       const ops = ['+', '-', '×', '÷'];
+      
       for (let i = 0; i < count; i++) {
-        const a = Math.floor(Math.random() * 90 + 10);
-        const b = Math.floor(Math.random() * 90 + 10);
+        const a = generateRandomNumber(digits);
+        const b = generateRandomNumber(digits);
         let expression = '';
         let answer = '';
 
@@ -189,7 +342,7 @@
           expression = `${a} ÷ ${divisor}`;
           answer = (a / divisor).toFixed(2);
         } else if (operation === 'mixed') {
-          const c = Math.floor(Math.random() * 90 + 10);
+          const c = generateRandomNumber(digits);
           const op1 = ops[Math.floor(Math.random() * 4)];
           const op2 = ops[Math.floor(Math.random() * 4)];
           expression = `(${a} ${op1} ${b}) ${op2} ${c}`;
@@ -201,8 +354,8 @@
           const safeExpr = expression.replace(/×/g, '*').replace(/÷/g, '/');
           try { answer = eval(safeExpr).toFixed(2); } catch { answer = '?'; }
         } else if (operation === 'complex-double') {
-          const c = randomInt(10, 99);
-          const d = randomInt(10, 99);
+          const c = generateRandomNumber(digits);
+          const d = generateRandomNumber(digits);
           const opLeft = ops[randomInt(0, ops.length - 1)];
           const opRight = ops[randomInt(0, ops.length - 1)];
           const opMain = ops[randomInt(0, ops.length - 1)];
@@ -215,16 +368,12 @@
       return problems;
     }
 
-    // Accepts dynamic count now
     function generateNewDataSet(countPerSection) {
-      const operations = ['addition', 'subtraction', 'multiplication', 'division', 'mixed', 'double-nested', 'complex-double'];
-      const data = {
-        problems: {},
-        visible: {} 
-      };
-      
+      const data = { problems: {}, visible: {} };
       operations.forEach(op => {
-        data.problems[op] = generateProblemsForOp(op, countPerSection);
+        const digitInput = document.getElementById(`digits-${op}`);
+        const digits = parseInt(digitInput.value) || 2;
+        data.problems[op] = generateProblemsForOp(op, countPerSection, digits);
       });
       return data;
     }
@@ -232,15 +381,25 @@
     // --- FIREBASE SYNC & RENDERING ---
 
     const statusEl = document.getElementById('status');
+    const countInput = document.getElementById('probCount');
 
     onSnapshot(docRef, (docSnap) => {
       if (docSnap.exists()) {
         const data = docSnap.data();
         statusEl.textContent = "Synced with cloud";
-        statusEl.style.color = "#00e676";
+        statusEl.style.color = "var(--accent-title)";
+        
+        // Update global count preference if changed elsewhere
+        if (data.problems && data.problems['addition']) {
+             const actualCount = data.problems['addition'].length;
+             if(Math.abs(parseInt(countInput.value) - actualCount) > 0) {
+                 // only update if different to avoid typing interruption
+                 countInput.value = actualCount; 
+             }
+        }
+
         renderAll(data);
       } else {
-        // Init with default 20 if nothing exists
         statusEl.textContent = "Initializing new sheet...";
         const newData = generateNewDataSet(20);
         setDoc(docRef, newData);
@@ -252,24 +411,17 @@
     });
 
     function renderAll(data) {
-      const operations = ['addition', 'subtraction', 'multiplication', 'division', 'mixed', 'double-nested', 'complex-double'];
-      
       operations.forEach(op => {
-        const container = document.getElementById(op);
-        if(!container) return;
-
-        const titleText = op.replace(/-/g, ' ').replace(/\b\w/g, char => char.toUpperCase());
-        container.innerHTML = `
-          <h2>
-            ${titleText} 
-            <button class="btn-clear section-btn" id="btn-clear-${op}">Clear</button>
-          </h2>
-        `;
-
+        // We only touch the list-container, leaving the header (and input) alone!
+        const listContainer = document.getElementById(`list-${op}`);
+        
+        // Re-bind clear button just in case (cheap operation)
         document.getElementById(`btn-clear-${op}`).onclick = () => clearSection(op, data.visible);
 
         const problemList = data.problems[op];
         if (!problemList) return;
+
+        listContainer.innerHTML = ''; 
 
         problemList.forEach((prob, index) => {
           const problemId = `${op}-${index}`;
@@ -283,7 +435,7 @@
              toggleAnswer(problemId, isVisible);
           };
 
-          container.appendChild(div);
+          listContainer.appendChild(div);
         });
       });
     }
@@ -313,13 +465,27 @@
        await updateDoc(docRef, { visible: {} });
     }
 
+    // Regenerate ONE section based on its input
+    async function regenerateSection(op) {
+      statusEl.textContent = `Regenerating ${op}...`;
+      
+      const count = parseInt(countInput.value) || 20;
+      const digits = parseInt(document.getElementById(`digits-${op}`).value) || 2;
+      
+      const newProblems = generateProblemsForOp(op, count, digits);
+      
+      // Update only this section in Firebase
+      await updateDoc(docRef, {
+        [`problems.${op}`]: newProblems
+      });
+    }
+
+    // Regenerate ALL sections based on their inputs
     async function regenerateAll() {
-      const countInput = document.getElementById('probCount');
       let count = parseInt(countInput.value);
+      if (isNaN(count) || count < 1) count = 20; 
       
-      if (isNaN(count) || count < 1) count = 20; // fallback safety
-      
-      if(confirm(`Generate ${count} problems per section? This updates for everyone.`)) {
+      if(confirm(`Generate ${count} problems?`)) {
         statusEl.textContent = "Regenerating...";
         const newData = generateNewDataSet(count);
         await setDoc(docRef, newData);
