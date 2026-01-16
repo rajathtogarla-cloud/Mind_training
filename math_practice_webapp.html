@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Mental Math Practice</title>
+  <title>Cloud Math Practice</title>
   <style>
     body {
       background-color: #121212;
@@ -14,6 +14,12 @@
     h1 {
       text-align: center;
       color: #00e676;
+    }
+    .status-indicator {
+      text-align: center;
+      font-size: 0.8em;
+      color: #757575;
+      margin-bottom: 10px;
     }
     .section {
       margin-top: 30px;
@@ -26,26 +32,54 @@
     .problem {
       margin: 8px 0;
       cursor: pointer;
+      user-select: none;
     }
     .answer {
+      opacity: 0;
       display: none;
       color: #90caf9;
       margin-left: 20px;
+      transition: opacity 0.2s;
+    }
+    .answer.visible {
+      display: inline;
+      opacity: 1;
     }
     .problem:hover {
       text-decoration: underline;
     }
 
-    /* --- New Button Styles --- */
+    /* --- Controls & Input Styles --- */
     .controls {
-      text-align: center;
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 10px;
+      align-items: center;
       margin-bottom: 20px;
+      padding: 15px;
+      background-color: #1e1e1e;
+      border-radius: 8px;
+    }
+    .control-group {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    input[type="number"] {
+      background-color: #333;
+      border: 1px solid #555;
+      color: #fff;
+      padding: 5px;
+      border-radius: 4px;
+      width: 60px;
+      text-align: center;
     }
     .btn-clear {
       background-color: #333;
       color: #fff;
       border: 1px solid #555;
-      padding: 5px 10px;
+      padding: 8px 16px;
       cursor: pointer;
       border-radius: 4px;
       font-size: 0.9em;
@@ -54,10 +88,20 @@
     .btn-clear:hover {
       background-color: #555;
     }
-    /* Specific style for section buttons to sit nicely next to H2 */
+    .btn-clear:active {
+      background-color: #222;
+    }
+    .btn-regen {
+      border-color: #b71c1c; 
+      color: #ff8a80;
+    }
+    .btn-regen:hover {
+      background-color: #3e2723;
+    }
     .section-btn {
       margin-left: 15px;
       font-size: 0.6em;
+      padding: 4px 8px;
       vertical-align: middle;
       background-color: #2c2c2c;
       border-color: #444;
@@ -65,48 +109,64 @@
   </style>
 </head>
 <body>
-  <h1>Mental Math Practice Sheet</h1>
+  <h1>Mental Math Practice (Cloud)</h1>
+  <div class="status-indicator" id="status">Connecting to cloud...</div>
 
   <div class="controls">
-    <button class="btn-clear" onclick="clearAll()">Clear All Answers</button>
+    <button class="btn-clear" id="globalClearBtn">Clear All Answers</button>
+    
+    <div class="control-group">
+      <label for="probCount">Count per section:</label>
+      <input type="number" id="probCount" value="20" min="1" max="200">
+      <button class="btn-clear btn-regen" id="regenerateBtn">Regenerate Problems</button>
+    </div>
   </div>
 
-  <div class="section" id="addition">
-    <h2>Addition</h2>
-  </div>
-  <div class="section" id="subtraction">
-    <h2>Subtraction</h2>
-  </div>
-  <div class="section" id="multiplication">
-    <h2>Multiplication</h2>
-  </div>
-  <div class="section" id="division">
-    <h2>Division</h2>
-  </div>
-  <div class="section" id="mixed">
-    <h2>Mixed Operations</h2>
-  </div>
-  <div class="section" id="double-nested">
-    <h2>Double Nested Operations</h2>
-  </div>
-  <div class="section" id="complex-double">
-    <h2>Complex Double Expressions</h2>
+  <div id="app-container">
+    <div class="section" id="addition"><h2>Addition</h2>Loading...</div>
+    <div class="section" id="subtraction"><h2>Subtraction</h2>Loading...</div>
+    <div class="section" id="multiplication"><h2>Multiplication</h2>Loading...</div>
+    <div class="section" id="division"><h2>Division</h2>Loading...</div>
+    <div class="section" id="mixed"><h2>Mixed Operations</h2>Loading...</div>
+    <div class="section" id="double-nested"><h2>Double Nested Operations</h2>Loading...</div>
+    <div class="section" id="complex-double"><h2>Complex Double Expressions</h2>Loading...</div>
   </div>
 
-  <script>
-    const STORAGE_PROBLEMS_KEY = 'mathPracticeProblems';
-    const STORAGE_VISIBILITY_KEY = 'visibleAnswers';
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+    import { getAnalytics } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-analytics.js";
+    import { 
+      getFirestore, 
+      doc, 
+      onSnapshot, 
+      setDoc, 
+      updateDoc 
+    } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
-    // Retrieve saved visibility or init empty
-    let visibleAnswers = JSON.parse(localStorage.getItem(STORAGE_VISIBILITY_KEY)) || {};
+    const firebaseConfig = {
+      apiKey: "AIzaSyBdTht0Qu-J_SJSzotwM6fMYR4PAFVj63s",
+      authDomain: "mind-training-f1b2b.firebaseapp.com",
+      projectId: "mind-training-f1b2b",
+      storageBucket: "mind-training-f1b2b.firebasestorage.app",
+      messagingSenderId: "1021385760984",
+      appId: "1:1021385760984:web:154f647b1fc90c34fef7ad",
+      measurementId: "G-CVNPF4YL6B"
+    };
 
-    // Helper function to generate a random integer within a range
+    const app = initializeApp(firebaseConfig);
+    const analytics = getAnalytics(app);
+    const db = getFirestore(app);
+
+    const DOC_ID = "math_sheet_v1"; 
+    const docRef = doc(db, "math_practice", DOC_ID);
+
+    // --- MATH LOGIC ---
+
     function randomInt(min, max) {
         return Math.floor(Math.random() * (max - min + 1)) + min;
     }
 
-    // Generate problems for a category
-    function generateProblems(operation, count) {
+    function generateProblemsForOp(operation, count) {
       const problems = [];
       const ops = ['+', '-', '×', '÷'];
       for (let i = 0; i < count; i++) {
@@ -134,130 +194,141 @@
           const op2 = ops[Math.floor(Math.random() * 4)];
           expression = `(${a} ${op1} ${b}) ${op2} ${c}`;
           const safeExpr = expression.replace(/×/g, '*').replace(/÷/g, '/');
-          try {
-            answer = eval(safeExpr).toFixed(2);
-          } catch {
-            answer = '?';
-          }
+          try { answer = eval(safeExpr).toFixed(2); } catch { answer = '?'; }
         } else if (operation === 'double-nested') {
           const op = ops[Math.floor(Math.random() * 4)];
           expression = `(${a} ${op} ${b}) × (${a} ${op} ${b})`;
           const safeExpr = expression.replace(/×/g, '*').replace(/÷/g, '/');
-          try {
-            answer = eval(safeExpr).toFixed(2);
-          } catch {
-            answer = '?';
-          }
+          try { answer = eval(safeExpr).toFixed(2); } catch { answer = '?'; }
         } else if (operation === 'complex-double') {
           const c = randomInt(10, 99);
           const d = randomInt(10, 99);
           const opLeft = ops[randomInt(0, ops.length - 1)];
           const opRight = ops[randomInt(0, ops.length - 1)];
           const opMain = ops[randomInt(0, ops.length - 1)];
-
           expression = `(${a} ${opLeft} ${b}) ${opMain} (${c} ${opRight} ${d})`;
-          const safeExpr = expression
-            .replace(/×/g, '*')
-            .replace(/÷/g, '/');
-          try {
-            answer = eval(safeExpr).toFixed(2);
-          } catch {
-            answer = '?';
-          }
+          const safeExpr = expression.replace(/×/g, '*').replace(/÷/g, '/');
+          try { answer = eval(safeExpr).toFixed(2); } catch { answer = '?'; }
         }
-
         problems.push({ expression, answer });
       }
       return problems;
     }
 
-    // Load problems from storage or generate if none saved
-    function getProblemsForOperation(opName) {
-      const allProblems = JSON.parse(localStorage.getItem(STORAGE_PROBLEMS_KEY)) || {};
-      if (!allProblems[opName]) {
-        allProblems[opName] = generateProblems(opName, 100);
-        localStorage.setItem(STORAGE_PROBLEMS_KEY, JSON.stringify(allProblems));
-      }
-      return allProblems[opName];
-    }
-
-    function saveVisibleAnswers() {
-      localStorage.setItem(STORAGE_VISIBILITY_KEY, JSON.stringify(visibleAnswers));
-    }
-
-    // --- NEW FUNCTIONS FOR CLEARING ---
-
-    // Clear answers for a specific section
-    function clearSection(sectionId) {
-      // 1. Update DOM
-      const container = document.getElementById(sectionId);
-      if (container) {
-        const answers = container.querySelectorAll('.answer');
-        answers.forEach(el => el.style.display = 'none');
-      }
-
-      // 2. Update Data
-      // Filter out keys that start with the sectionId
-      Object.keys(visibleAnswers).forEach(key => {
-        if (key.startsWith(sectionId + '-')) {
-          delete visibleAnswers[key];
-        }
+    // Accepts dynamic count now
+    function generateNewDataSet(countPerSection) {
+      const operations = ['addition', 'subtraction', 'multiplication', 'division', 'mixed', 'double-nested', 'complex-double'];
+      const data = {
+        problems: {},
+        visible: {} 
+      };
+      
+      operations.forEach(op => {
+        data.problems[op] = generateProblemsForOp(op, countPerSection);
       });
-      
-      saveVisibleAnswers();
+      return data;
     }
 
-    // Clear all answers everywhere
-    function clearAll() {
-      // 1. Update DOM
-      const allAnswers = document.querySelectorAll('.answer');
-      allAnswers.forEach(el => el.style.display = 'none');
+    // --- FIREBASE SYNC & RENDERING ---
 
-      // 2. Update Data
-      visibleAnswers = {};
-      saveVisibleAnswers();
-    }
+    const statusEl = document.getElementById('status');
 
-    // Render problems, restore answer visibility if saved
-    function renderProblems(sectionId, problems) {
-      const container = document.getElementById(sectionId);
-      if (!container) return; 
-      
-      const title = sectionId.replace(/-/g, ' ').replace(/\b\w/g, char => char.toUpperCase());
-      
-      // Updated innerHTML to include the Clear button
-      container.innerHTML = `<h2>${title} <button class="btn-clear section-btn" onclick="clearSection('${sectionId}')">Clear</button></h2>`;
-
-      problems.forEach((prob, index) => {
-        const problemId = `${sectionId}-${index}`;
-        const div = document.createElement('div');
-        div.className = 'problem';
-        div.innerHTML = `${index + 1}. ${prob.expression} = <span class="answer">${prob.answer}</span>`;
-
-        const answerSpan = div.querySelector('.answer');
-        if (visibleAnswers[problemId]) {
-          answerSpan.style.display = 'inline';
-        }
-
-        div.addEventListener('click', () => {
-          if (answerSpan.style.display === 'inline') {
-            answerSpan.style.display = 'none';
-            visibleAnswers[problemId] = false;
-          } else {
-            answerSpan.style.display = 'inline';
-            visibleAnswers[problemId] = true;
-          }
-          saveVisibleAnswers();
-        });
-        container.appendChild(div);
-      });
-    }
-
-    // Render all sections
-    ['addition', 'subtraction', 'multiplication', 'division', 'mixed', 'double-nested', 'complex-double'].forEach(op => {
-      const problems = getProblemsForOperation(op);
-      renderProblems(op, problems);
+    onSnapshot(docRef, (docSnap) => {
+      if (docSnap.exists()) {
+        const data = docSnap.data();
+        statusEl.textContent = "Synced with cloud";
+        statusEl.style.color = "#00e676";
+        renderAll(data);
+      } else {
+        // Init with default 20 if nothing exists
+        statusEl.textContent = "Initializing new sheet...";
+        const newData = generateNewDataSet(20);
+        setDoc(docRef, newData);
+      }
+    }, (error) => {
+      console.error("Firebase Error:", error);
+      statusEl.textContent = "Error: Check console.";
+      statusEl.style.color = "#ff1744";
     });
+
+    function renderAll(data) {
+      const operations = ['addition', 'subtraction', 'multiplication', 'division', 'mixed', 'double-nested', 'complex-double'];
+      
+      operations.forEach(op => {
+        const container = document.getElementById(op);
+        if(!container) return;
+
+        const titleText = op.replace(/-/g, ' ').replace(/\b\w/g, char => char.toUpperCase());
+        container.innerHTML = `
+          <h2>
+            ${titleText} 
+            <button class="btn-clear section-btn" id="btn-clear-${op}">Clear</button>
+          </h2>
+        `;
+
+        document.getElementById(`btn-clear-${op}`).onclick = () => clearSection(op, data.visible);
+
+        const problemList = data.problems[op];
+        if (!problemList) return;
+
+        problemList.forEach((prob, index) => {
+          const problemId = `${op}-${index}`;
+          const isVisible = data.visible[problemId] === true;
+
+          const div = document.createElement('div');
+          div.className = 'problem';
+          div.innerHTML = `${index + 1}. ${prob.expression} = <span class="answer ${isVisible ? 'visible' : ''}">${prob.answer}</span>`;
+          
+          div.onclick = () => {
+             toggleAnswer(problemId, isVisible);
+          };
+
+          container.appendChild(div);
+        });
+      });
+    }
+
+    // --- ACTIONS ---
+
+    async function toggleAnswer(problemId, currentStatus) {
+      const fieldPath = `visible.${problemId}`;
+      await updateDoc(docRef, { [fieldPath]: !currentStatus });
+    }
+
+    async function clearSection(sectionId, currentVisibleMap) {
+      const updates = {};
+      Object.keys(currentVisibleMap).forEach(key => {
+        if (key.startsWith(sectionId + '-')) {
+          updates[`visible.${key}`] = false;
+        }
+      });
+      if (Object.keys(updates).length > 0) {
+        statusEl.textContent = "Clearing section...";
+        await updateDoc(docRef, updates);
+      }
+    }
+
+    async function clearAll() {
+       statusEl.textContent = "Clearing all...";
+       await updateDoc(docRef, { visible: {} });
+    }
+
+    async function regenerateAll() {
+      const countInput = document.getElementById('probCount');
+      let count = parseInt(countInput.value);
+      
+      if (isNaN(count) || count < 1) count = 20; // fallback safety
+      
+      if(confirm(`Generate ${count} problems per section? This updates for everyone.`)) {
+        statusEl.textContent = "Regenerating...";
+        const newData = generateNewDataSet(count);
+        await setDoc(docRef, newData);
+      }
+    }
+
+    document.getElementById('globalClearBtn').addEventListener('click', () => clearAll());
+    document.getElementById('regenerateBtn').addEventListener('click', () => regenerateAll());
+
   </script>
 </body>
 </html>
