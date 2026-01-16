@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Mental Math Practice</title>
+  <style>
+    body {
+      background-color: #121212;
+      color: #ffffff;
+      font-family: Arial, sans-serif;
+      padding: 20px;
+    }
+    h1 {
+      text-align: center;
+      color: #00e676;
+    }
+    .section {
+      margin-top: 30px;
+    }
+    .section h2 {
+      color: #ffd600;
+    }
+    .problem {
+      margin: 8px 0;
+      cursor: pointer;
+    }
+    .answer {
+      display: none;
+      color: #90caf9;
+      margin-left: 20px;
+    }
+    .problem:hover {
+      text-decoration: underline;
+    }
+  </style>
+</head>
+<body>
+  <h1>Mental Math Practice Sheet</h1>
+
+  <div class="section" id="addition">
+    <h2>Addition</h2>
+  </div>
+  <div class="section" id="subtraction">
+    <h2>Subtraction</h2>
+  </div>
+  <div class="section" id="multiplication">
+    <h2>Multiplication</h2>
+  </div>
+  <div class="section" id="division">
+    <h2>Division</h2>
+  </div>
+  <div class="section" id="mixed">
+    <h2>Mixed Operations</h2>
+  </div>
+  <div class="section" id="double-nested">
+    <h2>Double Nested Operations</h2>
+  </div>
+  <div class="section" id="complex-double">
+    <h2>Complex Double Expressions</h2>
+  </div>
+
+  <script>
+    const STORAGE_PROBLEMS_KEY = 'mathPracticeProblems';
+    const STORAGE_VISIBILITY_KEY = 'visibleAnswers';
+
+    // Retrieve saved visibility or init empty
+    let visibleAnswers = JSON.parse(localStorage.getItem(STORAGE_VISIBILITY_KEY)) || {};
+
+    // Helper function to generate a random integer within a range
+    function randomInt(min, max) {
+        return Math.floor(Math.random() * (max - min + 1)) + min;
+    }
+
+    // Generate problems for a category
+    function generateProblems(operation, count) {
+      const problems = [];
+      const ops = ['+', '-', '×', '÷'];
+      for (let i = 0; i < count; i++) {
+        const a = Math.floor(Math.random() * 90 + 10);
+        const b = Math.floor(Math.random() * 90 + 10);
+        let expression = '';
+        let answer = '';
+
+        if (operation === 'addition') {
+          expression = `${a} + ${b}`;
+          answer = a + b;
+        } else if (operation === 'subtraction') {
+          expression = `${a} - ${b}`;
+          answer = a - b;
+        } else if (operation === 'multiplication') {
+          expression = `${a} × ${b}`;
+          answer = a * b;
+        } else if (operation === 'division') {
+          const divisor = b === 0 ? 1 : b;
+          expression = `${a} ÷ ${divisor}`;
+          answer = (a / divisor).toFixed(2);
+        } else if (operation === 'mixed') {
+          const c = Math.floor(Math.random() * 90 + 10);
+          const op1 = ops[Math.floor(Math.random() * 4)];
+          const op2 = ops[Math.floor(Math.random() * 4)];
+          expression = `(${a} ${op1} ${b}) ${op2} ${c}`;
+          const safeExpr = expression.replace(/×/g, '*').replace(/÷/g, '/');
+          try {
+            answer = eval(safeExpr).toFixed(2);
+          } catch {
+            answer = '?';
+          }
+        } else if (operation === 'double-nested') {
+          const op = ops[Math.floor(Math.random() * 4)];
+          expression = `(${a} ${op} ${b}) × (${a} ${op} ${b})`;
+          const safeExpr = expression.replace(/×/g, '*').replace(/÷/g, '/');
+          try {
+            answer = eval(safeExpr).toFixed(2);
+          } catch {
+            answer = '?';
+          }
+        } else if (operation === 'complex-double') {
+          // Two pairs of numbers + different ops inside parentheses, joined by one op
+          const c = randomInt(10, 99);
+          const d = randomInt(10, 99);
+          const opLeft = ops[randomInt(0, ops.length - 1)];
+          const opRight = ops[randomInt(0, ops.length - 1)];
+          const opMain = ops[randomInt(0, ops.length - 1)];
+
+          expression = `(${a} ${opLeft} ${b}) ${opMain} (${c} ${opRight} ${d})`;
+          const safeExpr = expression
+            .replace(/×/g, '*')
+            .replace(/÷/g, '/');
+          try {
+            answer = eval(safeExpr).toFixed(2);
+          } catch {
+            answer = '?';
+          }
+        }
+
+        problems.push({ expression, answer });
+      }
+      return problems;
+    }
+
+    // Load problems from storage or generate if none saved
+    function getProblemsForOperation(opName) {
+      const allProblems = JSON.parse(localStorage.getItem(STORAGE_PROBLEMS_KEY)) || {};
+      if (!allProblems[opName]) {
+        allProblems[opName] = generateProblems(opName, 100);
+        localStorage.setItem(STORAGE_PROBLEMS_KEY, JSON.stringify(allProblems));
+      }
+      return allProblems[opName];
+    }
+
+    function saveVisibleAnswers() {
+      localStorage.setItem(STORAGE_VISIBILITY_KEY, JSON.stringify(visibleAnswers));
+    }
+
+    // Render problems, restore answer visibility if saved
+    function renderProblems(sectionId, problems) {
+      const container = document.getElementById(sectionId);
+      if (!container) return; // Guard clause if element doesn't exist
+      // Create a formatted title from the section ID
+      const title = sectionId.replace(/-/g, ' ').replace(/\b\w/g, char => char.toUpperCase());
+      // Set the heading first, which clears any existing content
+      container.innerHTML = `<h2>${title}</h2>`;
+
+      problems.forEach((prob, index) => {
+        const problemId = `${sectionId}-${index}`;
+        const div = document.createElement('div');
+        div.className = 'problem';
+        div.innerHTML = `${index + 1}. ${prob.expression} = <span class="answer">${prob.answer}</span>`;
+
+        const answerSpan = div.querySelector('.answer');
+        if (visibleAnswers[problemId]) {
+          answerSpan.style.display = 'inline';
+        }
+
+        div.addEventListener('click', () => {
+          if (answerSpan.style.display === 'inline') {
+            answerSpan.style.display = 'none';
+            visibleAnswers[problemId] = false;
+          } else {
+            answerSpan.style.display = 'inline';
+            visibleAnswers[problemId] = true;
+          }
+          saveVisibleAnswers();
+        });
+        // Append the new problem element to the container
+        container.appendChild(div);
+      });
+    }
+
+    // Render all sections
+    ['addition', 'subtraction', 'multiplication', 'division', 'mixed', 'double-nested', 'complex-double'].forEach(op => {
+      const problems = getProblemsForOperation(op);
+      renderProblems(op, problems);
+    });
+  </script>
+</body>
+</html>
