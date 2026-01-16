@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
-  <title>Cloud Mixed Practice (Default Open)</title>
+  <title>Cloud Mixed Practice (Button Fix)</title>
   <style>
     body { 
       font-family: Arial, sans-serif; 
@@ -92,12 +92,13 @@
     }
     
     .set-header {
-      padding: 12px 15px;
+      padding: 12px 10px;
       background: #eef2ff; 
       display: flex;
       align-items: center;
-      flex-wrap: wrap;
-      gap: 10px;
+      flex-wrap: nowrap; 
+      justify-content: space-between;
+      gap: 8px;
       cursor: pointer; 
       user-select: none;
       border-bottom: 1px solid transparent;
@@ -118,24 +119,27 @@
       height: 12px;
       border-right: 3px solid #2563eb;
       border-bottom: 3px solid #2563eb;
-      transform: rotate(-45deg); /* Pointing down */
+      transform: rotate(45deg); 
       transition: transform 0.2s;
-      margin-right: 8px;
+      margin-right: 5px;
       margin-bottom: 3px;
+      flex-shrink: 0;
     }
     
-    /* Rotate chevron when collapsed (pointing right) */
     .set.collapsed .chevron {
-      transform: rotate(-45deg) rotate(-90deg); 
+      transform: rotate(45deg) rotate(-90deg); 
     }
 
     .set-title-text {
       color: #2563eb; 
       font-weight: bold;
-      font-size: 1.2em;
-      flex-grow: 1; 
+      font-size: 1.1em;
       display: flex;
       align-items: center;
+      white-space: nowrap; 
+      flex-grow: 1; /* Pushes other items to right, but doesn't force buttons to shrink */
+      overflow: hidden;
+      text-overflow: ellipsis;
     }
 
     .set-content {
@@ -173,13 +177,14 @@
       border-color: #86efac;
     }
 
+    /* Buttons inside header */
     .counter { 
       font-family: Arial, sans-serif;
       font-size: 0.8em;
       font-weight: normal; 
       color: #16a34a;
       background: #fff;
-      padding: 4px 10px;
+      padding: 4px 8px;
       border-radius: 12px;
       border: 1px solid #cbd5e1;
       white-space: nowrap;
@@ -192,6 +197,7 @@
       padding: 6px 10px; 
       color: #374151;
       font-size: 0.8em;
+      white-space: nowrap;
     }
 
     .btn-audio-toggle {
@@ -205,6 +211,7 @@
       display: flex;
       align-items: center;
       gap: 5px;
+      white-space: nowrap;
     }
     .btn-audio-toggle.active {
       background: #3b82f6;
@@ -212,19 +219,40 @@
       border-color: #2563eb;
     }
 
+    /* --- MOBILE STYLES --- */
     @media (max-width: 600px) {
       .controls { flex-direction: column; width: 90%; }
       .control-group { width: 100%; justify-content: center; }
-      button { width: 100%; margin-bottom: 5px; }
+      
+      /* FIX: Only stretch buttons inside the control panel, NOT the header */
+      .controls button { 
+        width: 100%; 
+        margin-bottom: 5px; 
+      }
+      
       li { width: 90%; margin: 8px auto; text-align: center; font-size: 20px; display: block; }
-      .set-header { justify-content: space-between; }
-      .set-title-text { width: 100%; margin-bottom: 8px; }
+      
+      /* Mobile Header Tweaks */
+      .set-header { gap: 5px; }
+      .set-title-text { font-size: 1em; }
+      
+      /* Explicitly keep header buttons small/auto width */
+      .btn-audio-toggle, 
+      .btn-set-reset {
+        width: auto; 
+        font-size: 0.7em;
+        padding: 4px 8px;
+      }
+      .counter {
+        font-size: 0.7em;
+        padding: 3px 6px;
+      }
     }
   </style>
 </head>
 <body>
 
-<h1>Mixed Combinations (Default Open)</h1>
+<h1>Mixed Combinations (Button Fix)</h1>
 <div class="status-bar" id="statusIndicator">Connecting to cloud...</div>
 
 <div class="controls">
@@ -285,7 +313,6 @@
   const speakSpeedInput = document.getElementById("speakSpeed");
 
   const audioState = {}; 
-  // No local storage loading for folders = Always starts empty/open
   const foldedState = {}; 
 
   const symbolMap = {
@@ -388,17 +415,14 @@
       totalItems += items.length;
       let sectionDone = 0;
 
-      // Wrapper
       const setDiv = document.createElement("div");
       setDiv.className = "set expanded"; 
       setDiv.id = `section-${setKey}`;
 
-      // Only check transient state (not saved to LS anymore)
       if (foldedState[setKey] === true) {
         setDiv.className = "set collapsed";
       }
 
-      // Header
       const headerDiv = document.createElement("div");
       headerDiv.className = "set-header";
       
@@ -421,7 +445,6 @@
         }
       };
 
-      // Header Controls
       const btnAudio = document.createElement("button");
       btnAudio.className = "btn-audio-toggle";
       const isAudioOn = audioState[setKey] === true;
@@ -454,7 +477,6 @@
       const counterDiv = document.createElement("div");
       counterDiv.className = "counter";
       
-      // Content
       const contentDiv = document.createElement("div");
       contentDiv.className = "set-content";
 
