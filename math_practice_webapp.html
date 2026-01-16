@@ -20,6 +20,8 @@
     }
     .section h2 {
       color: #ffd600;
+      display: flex;
+      align-items: center;
     }
     .problem {
       margin: 8px 0;
@@ -33,10 +35,41 @@
     .problem:hover {
       text-decoration: underline;
     }
+
+    /* --- New Button Styles --- */
+    .controls {
+      text-align: center;
+      margin-bottom: 20px;
+    }
+    .btn-clear {
+      background-color: #333;
+      color: #fff;
+      border: 1px solid #555;
+      padding: 5px 10px;
+      cursor: pointer;
+      border-radius: 4px;
+      font-size: 0.9em;
+      transition: background 0.2s;
+    }
+    .btn-clear:hover {
+      background-color: #555;
+    }
+    /* Specific style for section buttons to sit nicely next to H2 */
+    .section-btn {
+      margin-left: 15px;
+      font-size: 0.6em;
+      vertical-align: middle;
+      background-color: #2c2c2c;
+      border-color: #444;
+    }
   </style>
 </head>
 <body>
   <h1>Mental Math Practice Sheet</h1>
+
+  <div class="controls">
+    <button class="btn-clear" onclick="clearAll()">Clear All Answers</button>
+  </div>
 
   <div class="section" id="addition">
     <h2>Addition</h2>
@@ -116,7 +149,6 @@
             answer = '?';
           }
         } else if (operation === 'complex-double') {
-          // Two pairs of numbers + different ops inside parentheses, joined by one op
           const c = randomInt(10, 99);
           const d = randomInt(10, 99);
           const opLeft = ops[randomInt(0, ops.length - 1)];
@@ -153,14 +185,48 @@
       localStorage.setItem(STORAGE_VISIBILITY_KEY, JSON.stringify(visibleAnswers));
     }
 
+    // --- NEW FUNCTIONS FOR CLEARING ---
+
+    // Clear answers for a specific section
+    function clearSection(sectionId) {
+      // 1. Update DOM
+      const container = document.getElementById(sectionId);
+      if (container) {
+        const answers = container.querySelectorAll('.answer');
+        answers.forEach(el => el.style.display = 'none');
+      }
+
+      // 2. Update Data
+      // Filter out keys that start with the sectionId
+      Object.keys(visibleAnswers).forEach(key => {
+        if (key.startsWith(sectionId + '-')) {
+          delete visibleAnswers[key];
+        }
+      });
+      
+      saveVisibleAnswers();
+    }
+
+    // Clear all answers everywhere
+    function clearAll() {
+      // 1. Update DOM
+      const allAnswers = document.querySelectorAll('.answer');
+      allAnswers.forEach(el => el.style.display = 'none');
+
+      // 2. Update Data
+      visibleAnswers = {};
+      saveVisibleAnswers();
+    }
+
     // Render problems, restore answer visibility if saved
     function renderProblems(sectionId, problems) {
       const container = document.getElementById(sectionId);
-      if (!container) return; // Guard clause if element doesn't exist
-      // Create a formatted title from the section ID
+      if (!container) return; 
+      
       const title = sectionId.replace(/-/g, ' ').replace(/\b\w/g, char => char.toUpperCase());
-      // Set the heading first, which clears any existing content
-      container.innerHTML = `<h2>${title}</h2>`;
+      
+      // Updated innerHTML to include the Clear button
+      container.innerHTML = `<h2>${title} <button class="btn-clear section-btn" onclick="clearSection('${sectionId}')">Clear</button></h2>`;
 
       problems.forEach((prob, index) => {
         const problemId = `${sectionId}-${index}`;
@@ -183,7 +249,6 @@
           }
           saveVisibleAnswers();
         });
-        // Append the new problem element to the container
         container.appendChild(div);
       });
     }
