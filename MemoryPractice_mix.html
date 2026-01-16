@@ -3,25 +3,108 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
-  <title>Cloud Mixed Practice (Button Fix)</title>
+  <title>Cloud Mixed Practice (Expand/Collapse)</title>
   <style>
+    /* --- COLOR VARIABLES --- */
+    :root {
+      /* DEFAULT: PITCH BLACK MODE */
+      --bg-body: #000000;       
+      --text-main: #e0e0e0;
+      --text-dim: #9e9e9e;
+      
+      --accent-primary: #90caf9; 
+      --accent-secondary: #e0e0e0;
+      
+      --bg-card: #000000;       
+      --border-card: #333;      
+      
+      --bg-input-group: #111;   
+      --bg-input: #222;
+      --border-input: #444;
+      
+      --bg-header: #0a0a0a;     
+      --bg-header-hover: #1a1a1a;
+      
+      --li-bg: #000000;
+      --li-border: #444;
+      --li-hover: #111;
+      
+      /* Status Colors */
+      --status-connected: #00e676; 
+      --status-error: #ff1744;
+      
+      /* Completed State */
+      --completed-bg: #1b5e20;
+      --completed-text: #a5d6a7;
+      --completed-border: #2e7d32;
+
+      /* Button Colors */
+      --btn-bg-audio: #111;
+      --btn-text-audio: #b0bec5;
+      --btn-active-bg: #1565c0;
+      
+      --counter-bg: #111;
+      --counter-text: #69f0ae;
+    }
+
+    /* LIGHT MODE OVERRIDES */
+    body.light-mode {
+      --bg-body: #ffffff;
+      --text-main: #333333;
+      --text-dim: #6b7280;
+      
+      --accent-primary: #1e3a8a; 
+      --accent-secondary: #2563eb;
+      
+      --bg-card: #f8fafc;
+      --border-card: #e2e8f0;
+      
+      --bg-input-group: #e2e8f0;
+      --bg-input: #ffffff;
+      --border-input: #cbd5e1;
+      
+      --bg-header: #eef2ff;
+      --bg-header-hover: #e0e7ff;
+      
+      --li-bg: #ffffff;
+      --li-border: #cbd5e1;
+      --li-hover: #e2e8f0;
+      
+      --status-connected: #16a34a;
+      --status-error: #dc2626;
+      
+      --completed-bg: #bbf7d0;
+      --completed-text: #065f46;
+      --completed-border: #86efac;
+      
+      --btn-bg-audio: #e2e8f0;
+      --btn-text-audio: #64748b;
+      --btn-active-bg: #3b82f6;
+      
+      --counter-bg: #ffffff;
+      --counter-text: #16a34a;
+    }
+
     body { 
       font-family: Arial, sans-serif; 
       margin: 10px; 
-      background: #ffffff;
-      color: #333;
+      background: var(--bg-body);
+      color: var(--text-main);
       -webkit-text-size-adjust: 100%;
+      transition: background 0.3s, color 0.3s;
     }
+
     h1 { 
       text-align: center; 
-      color: #1e3a8a; 
+      color: var(--accent-primary); 
       margin-bottom: 10px;
       font-size: 1.5em;
     }
+
     .status-bar {
       text-align: center;
       font-size: 0.85em;
-      color: #6b7280;
+      color: var(--text-dim);
       margin-bottom: 15px;
       height: 20px;
     }
@@ -35,23 +118,28 @@
       align-items: center;
       margin: 10px auto; 
       padding: 15px;
-      background: #f8fafc;
+      background: var(--bg-card);
       border-radius: 8px;
       max-width: 900px;
-      border: 1px solid #e2e8f0;
+      border: 1px solid var(--border-card);
+      position: relative; 
     }
     
     .control-group {
       display: flex;
       align-items: center;
       gap: 8px;
-      background: #e2e8f0;
+      background: var(--bg-input-group);
       padding: 8px 12px;
       border-radius: 6px;
     }
 
+    label { color: var(--text-main); font-size: 0.9em; }
+
     input[type="number"] {
-      border: 1px solid #cbd5e1;
+      background: var(--bg-input);
+      color: var(--text-main);
+      border: 1px solid var(--border-input);
       padding: 8px;
       border-radius: 4px;
       width: 60px;
@@ -59,41 +147,58 @@
       font-weight: bold;
       font-size: 16px;
     }
-    input[type="range"] {
-      width: 100px;
-      cursor: pointer;
-    }
     
+    /* Theme Toggle Button */
+    .btn-theme {
+      background: transparent;
+      border: 1px solid var(--border-input);
+      color: var(--text-main);
+      padding: 8px 12px;
+      font-size: 1.2em;
+      margin-left: 10px;
+      line-height: 1;
+    }
+    .btn-theme:hover { background: var(--bg-header-hover); }
+
     button { 
       padding: 10px 16px;
       border: none;
       border-radius: 6px;
       cursor: pointer;
       font-weight: bold;
-      color: white;
+      color: white; 
       font-size: 14px;
       transition: opacity 0.2s;
     }
     button:hover { opacity: 0.85; }
     
-    #btn-reset { background: #dc2626; } 
-    #btn-copy { background: #2563eb; } 
-    #btn-download { background: #16a34a; } 
-    #btn-regen { background: #b91c1c; border: 1px solid #991b1b; } 
-    .btn-secondary { background: #64748b; }
+    #btn-reset { background: #b71c1c; } 
+    #btn-copy { background: #1565c0; } 
+    #btn-download { background: #2e7d32; } 
+    #btn-regen { background: #c62828; border: 1px solid #8e0000; } 
+    .btn-secondary { background: #546e7a; }
+    
+    /* NEW: Expand/Collapse Buttons */
+    .btn-view-control {
+      background: #424242;
+      color: #fff;
+    }
+    body.light-mode .btn-view-control {
+      background: #94a3b8;
+    }
 
-    /* --- SECTION & DROPDOWN STYLING --- */
+    /* --- SECTION STYLING --- */
     .set { 
       margin-top: 15px; 
-      background: #f1f5f9; 
+      background: var(--bg-card);
       border-radius: 8px; 
-      border: 1px solid #e2e8f0;
+      border: 1px solid var(--border-card);
       overflow: hidden; 
     }
     
     .set-header {
       padding: 12px 10px;
-      background: #eef2ff; 
+      background: var(--bg-header); 
       display: flex;
       align-items: center;
       flex-wrap: nowrap; 
@@ -104,52 +209,39 @@
       border-bottom: 1px solid transparent;
       transition: background 0.2s;
     }
-    .set-header:hover {
-      background: #e0e7ff;
-    }
+    .set-header:hover { background: var(--bg-header-hover); }
     
-    .set.expanded .set-header {
-      border-bottom: 1px solid #e2e8f0;
-    }
+    .set.expanded .set-header { border-bottom: 1px solid var(--border-card); }
 
     /* Arrow icon */
     .chevron {
       display: inline-block;
       width: 12px;
       height: 12px;
-      border-right: 3px solid #2563eb;
-      border-bottom: 3px solid #2563eb;
+      border-right: 3px solid var(--accent-secondary);
+      border-bottom: 3px solid var(--accent-secondary);
       transform: rotate(45deg); 
       transition: transform 0.2s;
       margin-right: 5px;
       margin-bottom: 3px;
       flex-shrink: 0;
     }
-    
-    .set.collapsed .chevron {
-      transform: rotate(45deg) rotate(-90deg); 
-    }
+    .set.collapsed .chevron { transform: rotate(45deg) rotate(-90deg); }
 
     .set-title-text {
-      color: #2563eb; 
+      color: var(--accent-secondary); 
       font-weight: bold;
       font-size: 1.1em;
       display: flex;
       align-items: center;
       white-space: nowrap; 
-      flex-grow: 1; /* Pushes other items to right, but doesn't force buttons to shrink */
+      flex-grow: 1;
       overflow: hidden;
       text-overflow: ellipsis;
     }
 
-    .set-content {
-      padding: 15px;
-      display: block;
-    }
-    
-    .set.collapsed .set-content {
-      display: none;
-    }
+    .set-content { padding: 15px; display: block; }
+    .set.collapsed .set-content { display: none; }
 
     ul { list-style: none; padding: 0; text-align: center; margin: 0; }
     
@@ -157,53 +249,56 @@
       display: inline-block;
       margin: 6px; 
       padding: 12px 16px; 
-      border: 1px solid #cbd5e1; 
+      border: 1px solid var(--li-border); 
       border-radius: 8px; 
-      background: #ffffff;
+      background: var(--li-bg);
       transition: all 0.1s;
       user-select: none;
       cursor: pointer;
       font-family: "Courier New", Courier, monospace; 
       font-size: 18px; 
       font-weight: 600;               
-      color: #334155;     
-      box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+      color: var(--text-main);     
+      box-shadow: 0 1px 2px rgba(255,255,255,0.05); 
     }
-    li:active { transform: scale(0.96); background: #f1f5f9; }
+    li:active { transform: scale(0.96); }
     
     li.completed { 
-      background: #bbf7d0 !important; 
-      color: #065f46 !important; 
-      border-color: #86efac;
+      background: var(--completed-bg) !important;
+      color: var(--completed-text) !important;
+      border-color: var(--completed-border);
+      box-shadow: none;
     }
 
-    /* Buttons inside header */
+    /* Small Header Elements */
     .counter { 
       font-family: Arial, sans-serif;
       font-size: 0.8em;
       font-weight: normal; 
-      color: #16a34a;
-      background: #fff;
+      color: var(--counter-text);
+      background: var(--counter-bg);
       padding: 4px 8px;
       border-radius: 12px;
-      border: 1px solid #cbd5e1;
+      border: 1px solid var(--border-input);
       white-space: nowrap;
+      margin-left: auto;
     }
 
     .btn-set-reset { 
-      background: white; 
-      border: 1px solid #9ca3af; 
+      background: var(--bg-input); 
+      border: 1px solid var(--border-input);
       border-radius: 4px; 
       padding: 6px 10px; 
-      color: #374151;
+      color: var(--text-main);
       font-size: 0.8em;
       white-space: nowrap;
     }
+    .btn-set-reset:hover { background: var(--bg-header-hover); }
 
     .btn-audio-toggle {
-      background: #e2e8f0;
-      border: 1px solid #cbd5e1;
-      color: #64748b;
+      background: var(--btn-bg-audio);
+      border: 1px solid var(--border-input);
+      color: var(--btn-text-audio);
       padding: 6px 12px;
       border-radius: 20px;
       font-size: 14px;
@@ -214,68 +309,60 @@
       white-space: nowrap;
     }
     .btn-audio-toggle.active {
-      background: #3b82f6;
+      background: var(--btn-active-bg);
       color: white;
-      border-color: #2563eb;
+      border-color: var(--btn-active-bg);
     }
 
-    /* --- MOBILE STYLES --- */
     @media (max-width: 600px) {
       .controls { flex-direction: column; width: 90%; }
       .control-group { width: 100%; justify-content: center; }
-      
-      /* FIX: Only stretch buttons inside the control panel, NOT the header */
-      .controls button { 
-        width: 100%; 
-        margin-bottom: 5px; 
-      }
+      .controls button:not(.btn-theme) { width: 100%; margin-bottom: 5px; }
       
       li { width: 90%; margin: 8px auto; text-align: center; font-size: 20px; display: block; }
-      
-      /* Mobile Header Tweaks */
       .set-header { gap: 5px; }
       .set-title-text { font-size: 1em; }
-      
-      /* Explicitly keep header buttons small/auto width */
-      .btn-audio-toggle, 
-      .btn-set-reset {
-        width: auto; 
-        font-size: 0.7em;
-        padding: 4px 8px;
-      }
-      .counter {
-        font-size: 0.7em;
-        padding: 3px 6px;
-      }
+      .btn-audio-toggle, .btn-set-reset { width: auto; font-size: 0.7em; padding: 4px 8px; }
+      .counter { font-size: 0.7em; padding: 3px 6px; }
     }
   </style>
 </head>
 <body>
 
-<h1>Mixed Combinations (Button Fix)</h1>
+<h1>Mixed Combinations</h1>
 <div class="status-bar" id="statusIndicator">Connecting to cloud...</div>
 
 <div class="controls">
-  <div style="width: 100%; text-align: center; margin-bottom: 10px; color: #1e3a8a; font-weight: bold; font-family: Arial;" id="globalCounter">
+  <div style="width: 100%; text-align: center; margin-bottom: 10px; color: var(--accent-primary); font-weight: bold;" id="globalCounter">
     Loading...
   </div>
   
   <button id="btn-reset">Reset Progress</button>
+
+  <div style="display:flex; gap:5px; width:100%;">
+    <button id="btn-expand" class="btn-view-control" style="flex:1;">Expand All</button>
+    <button id="btn-collapse" class="btn-view-control" style="flex:1;">Collapse All</button>
+  </div>
+
   <div style="display:flex; gap:5px; width:100%;">
     <button id="btn-copy" class="btn-secondary" style="flex:1;">Copy</button>
     <button id="btn-download" class="btn-secondary" style="flex:1;">Download</button>
   </div>
   
   <div class="control-group">
-    <label for="speakSpeed" style="font-size: 0.9em; color: #333;">Voice Speed:</label>
+    <label for="speakSpeed">Speed:</label>
     <input type="range" id="speakSpeed" min="0.5" max="1.5" step="0.1" value="0.9">
   </div>
   
   <div class="control-group">
-    <label for="itemCount" style="font-size: 0.9em; color: #333;">Items:</label>
+    <label for="itemCount">Items:</label>
     <input type="number" id="itemCount" value="50" min="10" max="200">
   </div>
-  <button id="btn-regen">Regenerate</button>
+  
+  <div style="display: flex; width: 100%; gap: 10px;">
+    <button id="btn-regen" style="flex: 1;">Regenerate</button>
+    <button id="btn-theme" class="btn-theme" title="Switch Theme">🌗</button>
+  </div>
 </div>
 
 <div id="setsContainer"></div>
@@ -311,10 +398,51 @@
   const globalCounter = document.getElementById("globalCounter");
   const inputCount = document.getElementById("itemCount");
   const speakSpeedInput = document.getElementById("speakSpeed");
+  const btnTheme = document.getElementById("btn-theme");
+  const btnExpand = document.getElementById("btn-expand");
+  const btnCollapse = document.getElementById("btn-collapse");
 
   const audioState = {}; 
   const foldedState = {}; 
 
+  // --- THEME LOGIC ---
+  function initTheme() {
+    const savedTheme = localStorage.getItem('theme');
+    if (savedTheme === 'light') {
+      document.body.classList.add('light-mode');
+    }
+  }
+  
+  btnTheme.addEventListener('click', () => {
+    document.body.classList.toggle('light-mode');
+    const isLight = document.body.classList.contains('light-mode');
+    localStorage.setItem('theme', isLight ? 'light' : 'dark');
+  });
+
+  initTheme();
+
+  // --- EXPAND / COLLAPSE LOGIC ---
+  btnExpand.addEventListener('click', () => {
+    document.querySelectorAll('.set').forEach(el => {
+      el.classList.remove('collapsed');
+      el.classList.add('expanded');
+      // Update state logic so it persists if we re-render (roughly)
+      const key = el.id.replace('section-', '');
+      foldedState[key] = false;
+    });
+  });
+
+  btnCollapse.addEventListener('click', () => {
+    document.querySelectorAll('.set').forEach(el => {
+      el.classList.remove('expanded');
+      el.classList.add('collapsed');
+      const key = el.id.replace('section-', '');
+      foldedState[key] = true;
+    });
+  });
+
+
+  // --- AUDIO & GENERATION LOGIC ---
   const symbolMap = {
     '!': 'Exclamation', '@': 'At', '#': 'Hash', '$': 'Dollar',
     '%': 'Percent', '^': 'Caret', '&': 'Ampersand', '*': 'Asterisk',
@@ -376,7 +504,7 @@
   onSnapshot(docRef, (docSnap) => {
     if (docSnap.exists()) {
       statusIndicator.textContent = "Synced with cloud";
-      statusIndicator.style.color = "#16a34a";
+      statusIndicator.style.color = "var(--status-connected)";
       
       const fullData = docSnap.data();
       currentData = fullData.dataset;
@@ -395,7 +523,7 @@
   }, (error) => {
     console.error("Firebase Error:", error);
     statusIndicator.textContent = "Error connecting to cloud.";
-    statusIndicator.style.color = "#dc2626";
+    statusIndicator.style.color = "var(--status-error)";
   });
 
   function renderAll(dataset, completedMap) {
