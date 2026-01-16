@@ -3,14 +3,14 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
-  <title>Cloud Mixed Practice (Mobile)</title>
+  <title>Cloud Mixed Practice (Default Open)</title>
   <style>
     body { 
       font-family: Arial, sans-serif; 
-      margin: 10px; /* Reduced margin for mobile */
+      margin: 10px; 
       background: #ffffff;
       color: #333;
-      -webkit-text-size-adjust: 100%; /* Prevents iOS text size weirdness */
+      -webkit-text-size-adjust: 100%;
     }
     h1 { 
       text-align: center; 
@@ -26,7 +26,7 @@
       height: 20px;
     }
     
-    /* --- Controls (Responsive) --- */
+    /* --- Controls --- */
     .controls { 
       display: flex;
       flex-wrap: wrap;
@@ -46,7 +46,7 @@
       align-items: center;
       gap: 8px;
       background: #e2e8f0;
-      padding: 8px 12px; /* Larger touch target */
+      padding: 8px 12px;
       border-radius: 6px;
     }
 
@@ -57,7 +57,7 @@
       width: 60px;
       text-align: center;
       font-weight: bold;
-      font-size: 16px; /* Prevents zoom on iPhone */
+      font-size: 16px;
     }
     input[type="range"] {
       width: 100px;
@@ -65,7 +65,7 @@
     }
     
     button { 
-      padding: 10px 16px; /* Larger touch target */
+      padding: 10px 16px;
       border: none;
       border-radius: 6px;
       cursor: pointer;
@@ -82,26 +82,87 @@
     #btn-regen { background: #b91c1c; border: 1px solid #991b1b; } 
     .btn-secondary { background: #64748b; }
 
-    ul { list-style: none; padding: 0; text-align: center; }
+    /* --- SECTION & DROPDOWN STYLING --- */
+    .set { 
+      margin-top: 15px; 
+      background: #f1f5f9; 
+      border-radius: 8px; 
+      border: 1px solid #e2e8f0;
+      overflow: hidden; 
+    }
     
-    /* --- LIST ITEM STYLING (Mobile Friendly) --- */
+    .set-header {
+      padding: 12px 15px;
+      background: #eef2ff; 
+      display: flex;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 10px;
+      cursor: pointer; 
+      user-select: none;
+      border-bottom: 1px solid transparent;
+      transition: background 0.2s;
+    }
+    .set-header:hover {
+      background: #e0e7ff;
+    }
+    
+    .set.expanded .set-header {
+      border-bottom: 1px solid #e2e8f0;
+    }
+
+    /* Arrow icon */
+    .chevron {
+      display: inline-block;
+      width: 12px;
+      height: 12px;
+      border-right: 3px solid #2563eb;
+      border-bottom: 3px solid #2563eb;
+      transform: rotate(45deg); /* Pointing down */
+      transition: transform 0.2s;
+      margin-right: 8px;
+      margin-bottom: 3px;
+    }
+    
+    /* Rotate chevron when collapsed (pointing right) */
+    .set.collapsed .chevron {
+      transform: rotate(45deg) rotate(-90deg); 
+    }
+
+    .set-title-text {
+      color: #2563eb; 
+      font-weight: bold;
+      font-size: 1.2em;
+      flex-grow: 1; 
+      display: flex;
+      align-items: center;
+    }
+
+    .set-content {
+      padding: 15px;
+      display: block;
+    }
+    
+    .set.collapsed .set-content {
+      display: none;
+    }
+
+    ul { list-style: none; padding: 0; text-align: center; margin: 0; }
+    
     li { 
       display: inline-block;
       margin: 6px; 
-      padding: 12px 16px; /* Much larger padding for fingers */
+      padding: 12px 16px; 
       border: 1px solid #cbd5e1; 
       border-radius: 8px; 
       background: #ffffff;
       transition: all 0.1s;
       user-select: none;
       cursor: pointer;
-      
       font-family: "Courier New", Courier, monospace; 
-      font-size: 18px; /* Larger font */
+      font-size: 18px; 
       font-weight: 600;               
-      color: #000000;     
-      
-      /* Make it easier to tap without hitting neighbor */
+      color: #334155;     
       box-shadow: 0 1px 2px rgba(0,0,0,0.05);
     }
     li:active { transform: scale(0.96); background: #f1f5f9; }
@@ -110,25 +171,6 @@
       background: #bbf7d0 !important; 
       color: #065f46 !important; 
       border-color: #86efac;
-    }
-
-    .set { 
-      margin-top: 20px; 
-      padding: 10px; 
-      background: #f1f5f9; 
-      border-radius: 8px; 
-      border: 1px solid #e2e8f0;
-    }
-    
-    /* Section Header Layout */
-    .set h2 { 
-      color: #2563eb; 
-      margin-bottom: 12px; 
-      display: flex;
-      flex-wrap: wrap; /* Allows wrapping on small phones */
-      align-items: center;
-      gap: 10px;
-      font-size: 1.2em;
     }
 
     .counter { 
@@ -143,7 +185,6 @@
       white-space: nowrap;
     }
 
-    /* --- BUTTONS --- */
     .btn-set-reset { 
       background: white; 
       border: 1px solid #9ca3af; 
@@ -151,7 +192,6 @@
       padding: 6px 10px; 
       color: #374151;
       font-size: 0.8em;
-      margin-left: auto; /* Pushes to right */
     }
 
     .btn-audio-toggle {
@@ -165,7 +205,6 @@
       display: flex;
       align-items: center;
       gap: 5px;
-      margin-right: 5px;
     }
     .btn-audio-toggle.active {
       background: #3b82f6;
@@ -173,40 +212,19 @@
       border-color: #2563eb;
     }
 
-    /* --- MOBILE SPECIFIC TWEAKS --- */
     @media (max-width: 600px) {
-      .controls {
-        flex-direction: column;
-        width: 90%;
-      }
-      .control-group {
-        width: 100%;
-        justify-content: center;
-      }
-      button {
-        width: 100%; /* Full width buttons on mobile */
-        margin-bottom: 5px;
-      }
-      li {
-        display: block; /* Stack items vertically on mobile? */
-        /* Or keep inline-block but make them wider */
-        width: 90%; 
-        margin: 8px auto;
-        text-align: center;
-        font-size: 20px; /* Even bigger text */
-      }
-      .set h2 {
-        justify-content: space-between;
-      }
-      .btn-set-reset {
-        margin-left: 0;
-      }
+      .controls { flex-direction: column; width: 90%; }
+      .control-group { width: 100%; justify-content: center; }
+      button { width: 100%; margin-bottom: 5px; }
+      li { width: 90%; margin: 8px auto; text-align: center; font-size: 20px; display: block; }
+      .set-header { justify-content: space-between; }
+      .set-title-text { width: 100%; margin-bottom: 8px; }
     }
   </style>
 </head>
 <body>
 
-<h1>Mixed Combinations (Mobile)</h1>
+<h1>Mixed Combinations (Default Open)</h1>
 <div class="status-bar" id="statusIndicator">Connecting to cloud...</div>
 
 <div class="controls">
@@ -267,6 +285,8 @@
   const speakSpeedInput = document.getElementById("speakSpeed");
 
   const audioState = {}; 
+  // No local storage loading for folders = Always starts empty/open
+  const foldedState = {}; 
 
   const symbolMap = {
     '!': 'Exclamation', '@': 'At', '#': 'Hash', '$': 'Dollar',
@@ -368,24 +388,51 @@
       totalItems += items.length;
       let sectionDone = 0;
 
-      const div = document.createElement("div");
-      div.className = "set";
-      div.id = `section-${setKey}`;
+      // Wrapper
+      const setDiv = document.createElement("div");
+      setDiv.className = "set expanded"; 
+      setDiv.id = `section-${setKey}`;
 
-      const title = document.createElement("h2");
+      // Only check transient state (not saved to LS anymore)
+      if (foldedState[setKey] === true) {
+        setDiv.className = "set collapsed";
+      }
+
+      // Header
+      const headerDiv = document.createElement("div");
+      headerDiv.className = "set-header";
       
+      const titleText = document.createElement("div");
+      titleText.className = "set-title-text";
+      titleText.innerHTML = `<span class="chevron"></span> ${setKey}`;
+      
+      headerDiv.onclick = (e) => {
+        if (e.target.tagName !== 'BUTTON') {
+            const isCollapsed = setDiv.classList.contains("collapsed");
+            if (isCollapsed) {
+                setDiv.classList.remove("collapsed");
+                setDiv.classList.add("expanded");
+                foldedState[setKey] = false;
+            } else {
+                setDiv.classList.remove("expanded");
+                setDiv.classList.add("collapsed");
+                foldedState[setKey] = true;
+            }
+        }
+      };
+
+      // Header Controls
       const btnAudio = document.createElement("button");
       btnAudio.className = "btn-audio-toggle";
       const isAudioOn = audioState[setKey] === true;
-      
       if (isAudioOn) {
         btnAudio.classList.add("active");
         btnAudio.innerHTML = "🔊 On";
       } else {
         btnAudio.innerHTML = "🔇 Off";
       }
-      
-      btnAudio.onclick = () => {
+      btnAudio.onclick = (e) => {
+        e.stopPropagation(); 
         audioState[setKey] = !audioState[setKey];
         if (audioState[setKey]) {
           btnAudio.classList.add("active");
@@ -399,18 +446,17 @@
       const btnReset = document.createElement("button");
       btnReset.className = "btn-set-reset";
       btnReset.textContent = "Reset";
-      btnReset.onclick = () => resetSection(setKey, items.length);
+      btnReset.onclick = (e) => {
+        e.stopPropagation(); 
+        resetSection(setKey, items.length);
+      }
 
       const counterDiv = document.createElement("div");
       counterDiv.className = "counter";
       
-      title.innerHTML = "";
-      const textSpan = document.createElement("span");
-      textSpan.textContent = `${setKey} `;
-      title.appendChild(textSpan);
-      title.appendChild(counterDiv);
-      title.appendChild(btnAudio);
-      title.appendChild(btnReset);
+      // Content
+      const contentDiv = document.createElement("div");
+      contentDiv.className = "set-content";
 
       const ul = document.createElement("ul");
       
@@ -434,12 +480,20 @@
         ul.appendChild(li);
       });
 
-      totalDone += sectionDone;
       counterDiv.textContent = `${sectionDone} / ${items.length}`;
-
-      div.appendChild(title);
-      div.appendChild(ul);
-      container.appendChild(div);
+      
+      headerDiv.appendChild(titleText);
+      headerDiv.appendChild(counterDiv);
+      headerDiv.appendChild(btnAudio);
+      headerDiv.appendChild(btnReset);
+      
+      contentDiv.appendChild(ul);
+      
+      setDiv.appendChild(headerDiv);
+      setDiv.appendChild(contentDiv);
+      
+      container.appendChild(setDiv);
+      totalDone += sectionDone;
     });
 
     globalCounter.textContent = `Total Completed: ${totalDone} / ${totalItems}`;
